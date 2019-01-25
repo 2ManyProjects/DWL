@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Button,
   TouchableOpacity,
   TextInput,
   View
@@ -36,7 +37,6 @@ export default class HomeScreen extends React.Component {
   onChanged = (input, overs) => {
     let newText = "";
     let numbers = "0123456789";
-
     for (var i = 0; i < input.length; i++) {
       if (numbers.indexOf(input[i]) > -1) {
         newText = newText + input[i];
@@ -45,9 +45,42 @@ export default class HomeScreen extends React.Component {
         alert("please enter numbers only");
       }
     }
-    if (overs) this.setState({ totalOvers: parseInt(newText, 10) });
-    else this.setState({ startingOvers: parseInt(newText, 10) });
+    let data = parseInt(newText, 10);
+    console.log("KEYPRESS:", data, data !== "NaN");
+    if (data) {
+      if (overs) this.setState({ totalOvers: data });
+      else this.setState({ startingOvers: data });
+    } else {
+      if (overs) this.setState({ totalOvers: 0 });
+      else this.setState({ startingOvers: 0 });
+    }
   };
+
+  checkInputs = () => {
+    return !(
+      this.state.gameID.length > 2 &&
+      this.state.totalOvers > 10 &&
+      this.state.startingOvers > 10
+    );
+  };
+
+  onLoad = () => {};
+
+  onSubmit = () => {
+    this.props.navigation.navigate("Main");
+  };
+
+  getTotalOvers = () => {
+    if (this.state.totalOvers != 0) return this.state.totalOvers.toString();
+    else return null;
+  };
+
+  getStartOvers = () => {
+    if (this.state.startingOvers != 0)
+      return this.state.startingOvers.toString();
+    else return null;
+  };
+
   render() {
     return (
       <ScrollView
@@ -62,6 +95,9 @@ export default class HomeScreen extends React.Component {
             alignItems: "center"
           }}
         >
+          <Text>{"\n"}</Text>
+          <Text>{"\n"}</Text>
+          <Text>{"\n"}</Text>
           <TextInput
             placeholder="Enter Game ID"
             style={{
@@ -87,6 +123,7 @@ export default class HomeScreen extends React.Component {
             keyboardType="numeric"
             placeholder="Total Overs"
             onChangeText={input => this.onChanged(input, true)}
+            value={this.getTotalOvers()}
             maxLength={2} //setting limit of input
           />
           <Text>{"\n"}</Text>
@@ -101,8 +138,27 @@ export default class HomeScreen extends React.Component {
             keyboardType="numeric"
             placeholder="Starting Overs"
             onChangeText={input => this.onChanged(input, false)}
+            value={this.getStartOvers()}
             maxLength={2} //setting limit of input
           />
+        </View>
+        <Text>{"\n"}</Text>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          <Button
+            disabled={this.checkInputs()}
+            onPress={this.onSubmit}
+            title="Start"
+            color="#FF8800"
+          />
+          <Text>{"     "}</Text>
+          <Button onPress={this.onLoad} title="Load" color="#FF8800" />
         </View>
       </ScrollView>
     );
