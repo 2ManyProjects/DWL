@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import Dialog from "react-native-dialog";
 import { FloatingAction } from "react-native-floating-action";
+import Interrupt from "../components/addInterrupt";
 
 export default class InningOne extends React.Component {
   static navigationOptions = {
@@ -47,13 +48,18 @@ export default class InningOne extends React.Component {
       // Error retrieving data
     }
   };
-
-  handleCancel = () => {
-    this.setState({ dialog: false });
-  };
   componentDidMount = () => {
     this._retrieveData();
   };
+
+  closeInterrupt = () => {
+    this.setState({ dialog: false });
+  };
+
+  openInterrupt = () => {
+    this.setState({ dialog: true });
+  };
+
   render() {
     const { navigation, screenProps } = this.props;
     return (
@@ -61,44 +67,18 @@ export default class InningOne extends React.Component {
         <View>
           <Text>Welcome, {screenProps.user.name}!</Text>
         </View>
-
-        <Dialog.Container visible={this.state.dialog}>
-          <Dialog.Title>Inning of ##</Dialog.Title>
-          <Dialog.Description> </Dialog.Description>
-          <Dialog.Input
-            label="Score"
-            underlineColorAndroid="#000"
-            style={dependant.OS}
-          />
-          <Dialog.Input
-            label="Wickets Fallen"
-            underlineColorAndroid="#000"
-            style={dependant.OS}
-          />
-          <Dialog.Input
-            label="Overs Bowled"
-            underlineColorAndroid="#000"
-            style={dependant.OS}
-          />
-          <Dialog.Input
-            label="Over Lost"
-            underlineColorAndroid="#000"
-            style={dependant.OS}
-          />
-          <Dialog.Input
-            label="Overs Left"
-            underlineColorAndroid="#000"
-            style={dependant.OS}
-          />
-          <Dialog.Button label="Submit" onPress={this.handleCancel} />
-          <Dialog.Button label="Cancel" onPress={this.handleCancel} />
-        </Dialog.Container>
-        <FloatingAction
+        <Interrupt
+          closeInterrupt={this.closeInterrupt}
+          open={this.state.dialog}
+        />
+        <Button title="Add" onPress={this.openInterrupt} />
+        {/* <FloatingAction
           position="center"
           onPressMain={() => {
-            this.setState({ dialog: !this.state.dialog });
+            let open = !this.state.dialog;
+            this.setState({ dialog: open });
           }}
-        />
+        /> */}
       </SafeAreaView>
     );
   }
