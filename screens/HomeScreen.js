@@ -6,15 +6,12 @@ import {
   StyleSheet,
   Text,
   Button,
-  TouchableOpacity,
   TextInput,
   View
 } from "react-native";
-import { WebBrowser } from "expo";
-
-import { MonoText } from "../components/StyledText";
+import { AsyncStorage } from "react-native";
 import data from "../raw/data";
-
+//
 export default class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -23,11 +20,12 @@ export default class HomeScreen extends React.Component {
     });
 
     this.state = {
-      gameID: "",
-      totalOvers: 0,
-      startingOvers: 0,
+      gameID: "uyfgfjgfg",
+      totalOvers: 50,
+      startingOvers: 50,
       calculationData: filtered,
-      gameData: {}
+      gameData: {},
+      submit: false
     };
   }
   static navigationOptions = {
@@ -35,39 +33,58 @@ export default class HomeScreen extends React.Component {
   };
 
   onChanged = (input, overs) => {
-    let newText = "";
-    let numbers = "0123456789";
-    for (var i = 0; i < input.length; i++) {
-      if (numbers.indexOf(input[i]) > -1) {
-        newText = newText + input[i];
-      } else {
-        // your call back function
-        alert("please enter numbers only");
+    if (/^\d+$/.test(input)) {
+      const value = parseInt(input);
+      if (overs)
+        this.setState({ totalOvers: value }, () => {
+          this.checkInputs();
+        });
+      else {
+        if (value <= this.state.totalOvers) {
+          this.setState({ startingOvers: value }, () => {
+            this.checkInputs();
+          });
+        } else {
+          this.setState({ startingOvers: 0 }, () => {
+            this.checkInputs();
+          });
+          alert("Starting Overs Cannot be Greater than Total Overs");
+        }
       }
-    }
-    let data = parseInt(newText, 10);
-    console.log("KEYPRESS:", data, data !== "NaN");
-    if (data) {
-      if (overs) this.setState({ totalOvers: data });
-      else this.setState({ startingOvers: data });
-    } else {
-      if (overs) this.setState({ totalOvers: 0 });
-      else this.setState({ startingOvers: 0 });
     }
   };
 
   checkInputs = () => {
-    return !(
-      this.state.gameID.length > 2 &&
-      this.state.totalOvers > 10 &&
-      this.state.startingOvers > 10
-    );
+    this.setState({
+      submit: !(
+        this.state.gameID.length > 2 &&
+        this.state.totalOvers > 10 &&
+        this.state.startingOvers > 10
+      )
+    });
   };
 
   onLoad = () => {};
 
+  _storeData = async data => {
+    try {
+      await AsyncStorage.setItem("GlobalData", JSON.stringify(data));
+      this.props.navigation.navigate("Main", { test: "value" });
+    } catch (error) {
+      console.log(error);
+      // Error saving data
+    }
+  };
+
   onSubmit = () => {
-    this.props.navigation.navigate("Main");
+    const data = {
+      gameID: this.state.gameID,
+      totalOvers: this.state.totalOvers,
+      startingOvers: this.state.startingOvers,
+      calculationData: this.state.calculationData,
+      gameData: this.state.gameData
+    };
+    this._storeData(data);
   };
 
   getTotalOvers = () => {
@@ -107,7 +124,9 @@ export default class HomeScreen extends React.Component {
               textAlign: "center",
               borderWidth: 1
             }}
-            onChangeText={gameID => this.setState({ gameID })}
+            onChangeText={gameID =>
+              this.setState({ gameID }, this.checkInputs())
+            }
             value={this.state.gameID}
             maxLength={10}
           />
@@ -152,7 +171,7 @@ export default class HomeScreen extends React.Component {
           }}
         >
           <Button
-            disabled={this.checkInputs()}
+            disabled={this.state.submit}
             onPress={this.onSubmit}
             title="Start"
             color="#FF8800"

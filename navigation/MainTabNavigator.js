@@ -1,82 +1,70 @@
-import React from "react";
-import { Platform } from "react-native";
-import {
-  createStackNavigator,
-  createBottomTabNavigator
-} from "react-navigation";
-
+import React, { Component } from "react";
+import { AppRegistry, Platform } from "react-native";
+import { createAppContainer, createBottomTabNavigator } from "react-navigation";
 import TabBarIcon from "../components/TabBarIcon";
-import HomeScreen from "../screens/HomeScreen";
 import InningOne from "../screens/inningOne";
-import InningTwo from "../screens/inningTwo";
 import SettingsScreen from "../screens/SettingsScreen";
+import InningTwo from "../screens/inningTwo";
 
-const HomeStack = createStackNavigator({
-  Home: HomeScreen
-});
-
-HomeStack.navigationOptions = {
-  tabBarLabel: "Home",
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={
-        Platform.OS === "ios"
-          ? `ios-information-circle${focused ? "" : "-outline"}`
-          : "md-information-circle"
+const AppNavigator = createAppContainer(
+  createBottomTabNavigator({
+    InningOne: {
+      screen: InningOne,
+      navigationOptions: {
+        tabBarLabel: "Home",
+        tabBarIcon: ({ focused }) => (
+          <TabBarIcon
+            focused={focused}
+            name={
+              Platform.OS === "ios"
+                ? `ios-information-circle${focused ? "" : "-outline"}`
+                : "md-information-circle"
+            }
+          />
+        )
       }
-    />
-  )
-};
-
-const Inning1 = createStackNavigator({
-  Home: InningOne
-});
-
-Inning1.navigationOptions = {
-  tabBarLabel: "Inning 1",
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={
-        Platform.OS === "ios"
-          ? `ios-information-circle${focused ? "" : "-outline"}`
-          : "md-information-circle"
+    },
+    Settings: {
+      screen: SettingsScreen,
+      navigationOptions: {
+        tabBarLabel: "Settings",
+        tabBarIcon: ({ focused }) => (
+          <TabBarIcon
+            focused={focused}
+            name={Platform.OS === "ios" ? "ios-options" : "md-options"}
+          />
+        )
       }
-    />
-  )
-};
+    },
+    InningTwo: {
+      screen: InningTwo,
+      navigationOptions: {
+        tabBarLabel: "Inning 2",
+        tabBarIcon: ({ focused }) => (
+          <TabBarIcon
+            focused={focused}
+            name={Platform.OS === "ios" ? "ios-link" : "md-link"}
+          />
+        )
+      }
+    }
+  })
+);
 
-const Inning2 = createStackNavigator({
-  Links: InningTwo
-});
+class MyApp extends Component {
+  render() {
+    const screenProps = {
+      user: {
+        name: "John Doe",
+        username: "johndoe123",
+        email: "john@doe.com"
+      }
+    };
 
-Inning2.navigationOptions = {
-  tabBarLabel: "Inning 2",
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={Platform.OS === "ios" ? "ios-link" : "md-link"}
-    />
-  )
-};
+    return <AppNavigator screenProps={screenProps} />;
+  }
+}
 
-const SettingsStack = createStackNavigator({
-  Settings: SettingsScreen
-});
+export default MyApp;
 
-SettingsStack.navigationOptions = {
-  tabBarLabel: "Settings",
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={Platform.OS === "ios" ? "ios-options" : "md-options"}
-    />
-  )
-};
-
-export default createBottomTabNavigator({
-  Inning1,
-  SettingsStack,
-  Inning2
-});
+AppRegistry.registerComponent("MyApp", () => MyApp);

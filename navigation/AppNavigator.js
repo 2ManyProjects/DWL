@@ -25,11 +25,10 @@ HomeStack.navigationOptions = {
 };
 
 import MainTabNavigator from "./MainTabNavigator";
-const AppStack = createStackNavigator({ Home: HomeStack });
 
 export default createAppContainer(
   createSwitchNavigator({
-    App: AppStack,
+    App: HomeStack,
     Main: MainTabNavigator
   })
 );
