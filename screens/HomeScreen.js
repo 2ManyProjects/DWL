@@ -51,6 +51,26 @@ export default class HomeScreen extends React.Component {
           alert("Starting Overs Cannot be Greater than Total Overs");
         }
       }
+    } else if (input.length === 0) {
+      if (overs) {
+        this.setState({ totalOvers: 0 }, () => {
+          this.checkInputs();
+        });
+      } else {
+        this.setState({ startingOvers: 0 }, () => {
+          this.checkInputs();
+        });
+      }
+    } else {
+      if (overs) {
+        this.setState({ totalOvers: this.state.totalOvers }, () => {
+          this.checkInputs();
+        });
+      } else {
+        this.setState({ startingOvers: this.state.startingOvers }, () => {
+          this.checkInputs();
+        });
+      }
     }
   };
 
@@ -87,15 +107,10 @@ export default class HomeScreen extends React.Component {
     this._storeData(data);
   };
 
-  getTotalOvers = () => {
-    if (this.state.totalOvers != 0) return this.state.totalOvers.toString();
-    else return null;
-  };
-
-  getStartOvers = () => {
-    if (this.state.startingOvers != 0)
-      return this.state.startingOvers.toString();
-    else return null;
+  getOvers = input => {
+    if (this.state[input] && this.state[input] != 0)
+      return this.state[input].toString();
+    else return "";
   };
 
   render() {
@@ -142,7 +157,7 @@ export default class HomeScreen extends React.Component {
             keyboardType="numeric"
             placeholder="Total Overs"
             onChangeText={input => this.onChanged(input, true)}
-            value={this.getTotalOvers()}
+            value={this.getOvers("totalOvers")}
             maxLength={2} //setting limit of input
           />
           <Text>{"\n"}</Text>
@@ -157,7 +172,7 @@ export default class HomeScreen extends React.Component {
             keyboardType="numeric"
             placeholder="Starting Overs"
             onChangeText={input => this.onChanged(input, false)}
-            value={this.getStartOvers()}
+            value={this.getOvers("startingOvers")}
             maxLength={2} //setting limit of input
           />
         </View>

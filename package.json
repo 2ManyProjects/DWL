@@ -17,6 +17,7 @@
     "react": "16.5.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
     "react-native-dialog": "^5.5.0",
+    "react-native-elements": "^1.0.0-beta7",
     "react-native-floating-action": "^1.14.1",
     "react-navigation": "^3.0.9"
   },

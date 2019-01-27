@@ -5,12 +5,12 @@ import {
   View,
   Text,
   Platform,
-  Button,
+  ScrollView,
   AsyncStorage
 } from "react-native";
-import Dialog from "react-native-dialog";
 import { FloatingAction } from "react-native-floating-action";
 import Interrupt from "../components/addInterrupt";
+import { Card } from "react-native-elements";
 
 export default class InningOne extends React.Component {
   static navigationOptions = {
@@ -25,7 +25,8 @@ export default class InningOne extends React.Component {
       calculationData: {},
       interupts: [],
       dialog: false,
-      gameData: {}
+      gameData: {},
+      cardString: null
     };
   }
 
@@ -60,6 +61,51 @@ export default class InningOne extends React.Component {
     this.setState({ dialog: true });
   };
 
+  create = data => {
+    let interruptArray = this.state.interupts;
+    interruptArray.push(data);
+    this.setState({ interupts: interruptArray }, this.generateCards());
+  };
+
+  generateCards = () => {
+    let data = "";
+    const style = {
+      flex: 1,
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center"
+    };
+    data = this.state.interupts.map((interupt, index) => {
+      return (
+        <Card key={index}>
+          <View style={{ flex: 1, flexDirection: "row" }}>
+            <View style={style}>
+              <Text>Score</Text>
+              <Text>{interupt.score.toString()}</Text>
+            </View>
+
+            <View style={style}>
+              <Text>Wickets</Text>
+              <Text>{interupt.wickets.toString()}</Text>
+            </View>
+
+            <View style={style}>
+              <Text>Ov/Bowled</Text>
+              <Text>{interupt.oversBowled.toString()}</Text>
+            </View>
+
+            <View style={style}>
+              <Text>Ov/Lost</Text>
+              <Text>{interupt.oversLost.toString()}</Text>
+            </View>
+          </View>
+        </Card>
+      );
+    });
+
+    this.setState({ cardString: data });
+  };
+
   render() {
     const { navigation, screenProps } = this.props;
     return (
@@ -67,18 +113,18 @@ export default class InningOne extends React.Component {
         <View>
           <Text>Welcome, {screenProps.user.name}!</Text>
         </View>
+        <ScrollView>{this.state.cardString}</ScrollView>
         <Interrupt
+          create={this.create}
           closeInterrupt={this.closeInterrupt}
           open={this.state.dialog}
         />
-        <Button title="Add" onPress={this.openInterrupt} />
-        {/* <FloatingAction
+        {/* <Button title="Add" onPress={this.openInterrupt} /> */}
+        <FloatingAction
           position="center"
-          onPressMain={() => {
-            let open = !this.state.dialog;
-            this.setState({ dialog: open });
-          }}
-        /> */}
+          showBackground={false}
+          onPressMain={this.openInterrupt}
+        />
       </SafeAreaView>
     );
   }
@@ -98,10 +144,3 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff"
   }
 });
-
-//Inning of $number
-//Score
-//Wickets Fallen
-//Overs Bowled
-//Over Lost
-//Overs Left
