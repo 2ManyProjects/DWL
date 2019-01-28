@@ -15,15 +15,15 @@ import data from "../raw/data";
 export default class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
-    var filtered = data.filter(function(el) {
-      return el[0] != null;
-    });
+    // var filtered = data.filter(function(el) {
+    //   return el[0] != null;
+    // });
 
     this.state = {
       gameID: "uyfgfjgfg",
       totalOvers: 50,
       startingOvers: 50,
-      calculationData: filtered,
+      calculationData: data,
       gameData: {},
       submit: false
     };
@@ -89,7 +89,7 @@ export default class HomeScreen extends React.Component {
   _storeData = async data => {
     try {
       await AsyncStorage.setItem("GlobalData", JSON.stringify(data));
-      this.props.navigation.navigate("Main", { test: "value" });
+      this.props.navigation.navigate("Main");
     } catch (error) {
       console.log(error);
       // Error saving data
