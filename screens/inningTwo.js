@@ -91,36 +91,42 @@ export default class InningTwo extends React.Component {
   componentDidMount = () => {
     this._retrieveData();
     this.props.navigation.addListener("willFocus", this.load);
-    this.props.navigation.addListener("willBlur", this.save);
+    // this.props.navigation.addListener("willBlur", this.save);
   };
   load = async () => {
-    console.log("Focus");
+    console.log("Loading Inning 1 Data");
     const self = this;
     try {
       const value = await AsyncStorage.getItem("Inning1");
       if (value !== null) {
         const data = JSON.parse(value);
-        self.setState({
-          missing: data.missing,
-          R1: data.R1
-        });
+        self.setState(
+          {
+            missing: data.missing,
+            R1: data.R1
+          },
+          console.log("Inning 1 Data Loaded", data)
+        );
       }
     } catch (error) {
       // Error retrieving data
     }
   };
 
-  save = async () => {
-    const data = {
-      size: this.state.interupts.length
-    };
-    try {
-      await AsyncStorage.setItem("Inning2", JSON.stringify(data));
-    } catch (error) {
-      console.log(error);
-      // Error saving data
-    }
-  };
+  // save = async () => {
+  //   const self = this;
+  //   console.log("Saving Inning 2");
+  //   try {
+  //     await AsyncStorage.mergeItem(
+  //       "Inning2",
+  //       JSON.stringify({ size: this.state.interupts.length })
+  //     );
+  //     console.log("Inning 2 Saved", this.state.interupts.length);
+  //   } catch (error) {
+  //     console.log(error);
+  //     // Error saving data
+  //   }
+  // };
 
   closeInterrupt = () => {
     this.setState({ dialog: false });
@@ -162,45 +168,57 @@ export default class InningTwo extends React.Component {
     let interruptArray = this.state.interupts;
     tempData["id"] = generateGuid();
     interruptArray.push(tempData);
-    this.setState({ interupts: interruptArray }, () => {
+    this.setState({ interupts: interruptArray }, async () => {
+      console.log("Saving Inning 2");
+      try {
+        await AsyncStorage.mergeItem(
+          "Inning2",
+          JSON.stringify({ size: this.state.interupts.length })
+        );
+        console.log("Inning 2 Saved", this.state.interupts.length);
+      } catch (error) {
+        console.log(error);
+        // Error saving data
+      }
       this.calculateR2();
       this.generateCards();
     });
   };
 
   calculateR2 = () => {
-    let missingOvers = this.state.missing;
-    let acc = parseFloat(this.state.acc);
-    let ac = this.state.ac;
-    let data = this.state.calculationData;
-    let lastadded = this.state.interupts[this.state.interupts.length - 1];
-    let lastaddedOversLost = lastadded.oversLost;
-    let lastaddedOversLeft = lastadded.oversLeft;
-    let temp = (lastaddedOversLeft - lastaddedOversLost) * 10;
-    let wickets = lastadded.wickets;
-    acc =
-      acc +
-      (data[Math.floor(lastaddedOversLeft) * 10][wickets] -
-        data[temp][wickets]);
-    console.log("Acc 2: ", acc);
-    ac.push(
-      data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
-    );
-    missingOvers += lastaddedOversLost;
-    console.log(
-      "Calculation",
-      data[Math.floor(lastaddedOversLeft) * 10][wickets] +
-        " - " +
-        data[temp][wickets]
-    );
-    console.log("Acc:", acc.toFixed(1));
+    if (this.state.interupts.length > 0) {
+      let missingOvers = this.state.missing;
+      let acc = parseFloat(this.state.acc);
+      let ac = this.state.ac;
+      let data = this.state.calculationData;
+      let lastadded = this.state.interupts[this.state.interupts.length - 1];
+      let lastaddedOversLost = lastadded.oversLost;
+      let lastaddedOversLeft = lastadded.oversLeft;
+      let temp = (lastaddedOversLeft - lastaddedOversLost) * 10;
+      let wickets = lastadded.wickets;
+      acc =
+        acc +
+        (data[Math.floor(lastaddedOversLeft) * 10][wickets] -
+          data[temp][wickets]);
+      ac.push(
+        data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
+      );
+      missingOvers += lastaddedOversLost;
+      // console.log(
+      //   "Calculation",
+      //   data[Math.floor(lastaddedOversLeft) * 10][wickets] +
+      //     " - " +
+      //     data[temp][wickets]
+      // );
+      // console.log("Acc:", acc.toFixed(1));
 
-    this.setState(
-      { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
-      () => {
-        this.calculate();
-      }
-    );
+      this.setState(
+        { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
+        () => {
+          this.calculate();
+        }
+      );
+    }
   };
 
   removeR2 = id => {
@@ -225,7 +243,7 @@ export default class InningTwo extends React.Component {
     this.setState(
       { acc: acc, ac: ac, missing: missingOvers, interupts: inter },
       () => {
-        console.log("Acc: ", acc);
+        // console.log("Acc: ", acc);
         this.calculateR2();
         this.generateCards();
       }

@@ -31,13 +31,12 @@ export default class InningOne extends React.Component {
       calculationData: {},
       interupts: [],
       dialog: false,
+      block: false,
       gameData: {},
       cardString: null,
       globalValue: [0, 0, 0] //
     };
   }
-
-  //R1 = data[GlobalValue[2]*10][0];
 
   initglobalValue = val => {
     let total = this.state.totalOvers;
@@ -85,32 +84,53 @@ export default class InningOne extends React.Component {
   };
   componentDidMount = () => {
     this.props.navigation.addListener("willFocus", this.load);
-    this.props.navigation.addListener("willBlur", this.save);
+    // this.props.navigation.addListener("willBlur", this.save);
     this._retrieveData();
   };
-  load = () => {
-    console.log("On Screen");
-  };
-
-  save = async () => {
-    const data = {
-      missing: this.state.missing,
-      R1: this.state.R1
-    };
+  load = async () => {
+    const self = this;
+    console.log("Loading Inning 2 Data");
     try {
-      await AsyncStorage.setItem("Inning1", JSON.stringify(data));
+      const value = await AsyncStorage.getItem("Inning2");
+      if (value !== null) {
+        const start = JSON.parse(value).size > 0;
+        self.setState(
+          {
+            block: start
+          },
+          console.log("Inning 2 Data Loaded")
+        );
+      }
     } catch (error) {
-      console.log(error);
-      // Error saving data
+      // Error retrieving data
     }
   };
+
+  // save = async () => {
+  //   console.log("Saving Inning 1");
+  //   const data = {
+  //     missing: this.state.missing,
+  //     R1: this.state.R1
+  //   };
+  //   try {
+  //     await AsyncStorage.mergeItem("Inning1", JSON.stringify(data));
+  //     console.log("Inning 1 Saved", data);
+  //   } catch (error) {
+  //     console.log(error);
+  //     // Error saving data
+  //   }
+  // };
 
   closeInterrupt = () => {
     this.setState({ dialog: false });
   };
 
   openInterrupt = () => {
-    this.setState({ dialog: true });
+    if (this.state.block) {
+      alert("Please Clear interupts from Inning 2 before modifying Inning 1");
+    } else {
+      this.setState({ dialog: true });
+    }
   };
 
   create = data => {
@@ -126,46 +146,59 @@ export default class InningOne extends React.Component {
   };
 
   calculaterR1 = () => {
-    let missingOvers = this.state.missing;
-    let acc = parseFloat(this.state.acc);
-    let ac = this.state.ac;
-    let data = this.state.calculationData;
-    let lastadded = this.state.interupts[this.state.interupts.length - 1];
-    let lastaddedOversLost = lastadded.oversLost;
-    let lastaddedOversLeft = lastadded.oversLeft;
-    let temp = Math.floor((lastaddedOversLeft - lastaddedOversLost / 2) * 10);
-    let wickets = lastadded.wickets;
+    if (this.state.interupts.length > 0) {
+      let missingOvers = this.state.missing;
+      let acc = parseFloat(this.state.acc);
+      let ac = this.state.ac;
+      let data = this.state.calculationData;
+      let lastadded = this.state.interupts[this.state.interupts.length - 1];
+      let lastaddedOversLost = lastadded.oversLost;
+      let lastaddedOversLeft = lastadded.oversLeft;
+      let temp = Math.floor((lastaddedOversLeft - lastaddedOversLost / 2) * 10);
+      let wickets = lastadded.wickets;
 
-    acc =
-      acc +
-      (data[Math.floor(lastaddedOversLeft) * 10][wickets] -
-        data[temp][wickets]);
-    ac.push(
-      data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
-    );
-    missingOvers += lastaddedOversLost / 2;
-    console.log(
-      "Calculation",
-      data[Math.floor(lastaddedOversLeft) * 10][wickets] +
-        " - " +
-        data[temp][wickets]
-    );
-    console.log("Acc: ", acc.toFixed(1));
+      acc =
+        acc +
+        (data[Math.floor(lastaddedOversLeft) * 10][wickets] -
+          data[temp][wickets]);
+      ac.push(
+        data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
+      );
+      missingOvers += lastaddedOversLost / 2;
+      // console.log(
+      //   "Calculation",
+      //   data[Math.floor(lastaddedOversLeft) * 10][wickets] +
+      //     " - " +
+      //     data[temp][wickets]
+      // );
+      // console.log("Acc: ", acc.toFixed(1));
 
-    this.setState(
-      { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
-      () => {
-        this.getR1();
-      }
-    );
+      this.setState(
+        { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
+        () => {
+          this.getR1();
+        }
+      );
+    }
   };
 
   getR1 = () => {
     let R1 =
       this.state.calculationData[this.state.globalValue[2] * 10][0] -
       parseFloat(this.state.acc);
-    this.setState({ R1: R1 }, () => {
-      console.log("R1", this.state.R1);
+    this.setState({ R1: R1 }, async () => {
+      const data = {
+        missing: this.state.missing,
+        R1: this.state.R1
+      };
+      try {
+        await AsyncStorage.mergeItem("Inning1", JSON.stringify(data));
+        console.log("Inning 1 Saved", data);
+      } catch (error) {
+        console.log(error);
+        // Error saving data
+      }
+      // console.log("R1", this.state.R1);
     });
   };
 
@@ -191,7 +224,7 @@ export default class InningOne extends React.Component {
     this.setState(
       { acc: acc, ac: ac, missing: missingOvers, interupts: inter },
       () => {
-        console.log("Acc: ", acc);
+        // console.log("Acc: ", acc);
         this.getR1();
         this.generateCards();
       }
@@ -248,7 +281,13 @@ export default class InningOne extends React.Component {
             >
               <Button
                 onPress={() => {
-                  alert("pressed Edit");
+                  if (this.state.block) {
+                    alert(
+                      "Please Clear interupts from Inning 2 before modifying Inning 1"
+                    );
+                  } else {
+                    alert("pressed Edit");
+                  }
                 }}
                 title="Edit"
                 color="#FF8800"
@@ -256,7 +295,13 @@ export default class InningOne extends React.Component {
               <Text>{"     "}</Text>
               <Button
                 onPress={() => {
-                  this.removeR1(interupt.id);
+                  if (this.state.block) {
+                    alert(
+                      "Please Clear interupts from Inning 2 before modifying Inning 1"
+                    );
+                  } else {
+                    this.removeR1(interupt.id);
+                  }
                 }}
                 title="Delete"
                 color="#FF8800"

@@ -48,16 +48,17 @@ const AppNavigator = createAppContainer(
 );
 
 class MyApp extends Component {
-  render() {
-    const screenProps = {
-      user: {
-        name: "John Doe",
-        username: "johndoe123",
-        email: "john@doe.com"
-      }
-    };
+  state = {
+    size: 0
+  };
 
-    return <AppNavigator screenProps={screenProps} />;
+  setSize = size => {
+    console.log("Setting Size ", size);
+    this.setState({ size: size }, console.log("Main Size ", this.state.size));
+  };
+
+  render() {
+    return <AppNavigator screenProps={this.setSize} />;
   }
 }
 

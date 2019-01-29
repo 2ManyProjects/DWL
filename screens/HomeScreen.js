@@ -87,9 +87,19 @@ export default class HomeScreen extends React.Component {
   onLoad = () => {};
 
   _storeData = async data => {
+    const self = this;
     try {
       await AsyncStorage.setItem("GlobalData", JSON.stringify(data));
-      this.props.navigation.navigate("Main");
+      await AsyncStorage.setItem("Inning2", JSON.stringify({ size: 0 }));
+      await AsyncStorage.setItem(
+        "Inning1",
+        JSON.stringify({
+          missing: 0,
+          R1: 0
+        })
+      );
+      console.log("All Keys", await AsyncStorage.getAllKeys());
+      self.props.navigation.navigate("Main");
     } catch (error) {
       console.log(error);
       // Error saving data
