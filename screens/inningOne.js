@@ -35,10 +35,10 @@ export default class InningOne extends React.Component {
       interupts: [],
       dialog: false,
       block: false,
-      gameData: {},
       cardString: null,
-      globalValue: [0, 0, 0] //
+      globalValue: [0, 0, 0]
     };
+    console.log("Inning 1 contructed");
   }
 
   initglobalValue = val => {
@@ -63,46 +63,77 @@ export default class InningOne extends React.Component {
     this.setState({ globalValue: arr });
   };
 
-  _retrieveData = async () => {
+  _retrieveData = async savedFile => {
     const self = this;
     try {
       const value = await AsyncStorage.getItem("GlobalData");
       if (value !== null) {
         const data = JSON.parse(value);
         const start = data.startingOvers;
-        self.setState(
-          {
-            gameID: data.gameID,
-            totalOvers: data.totalOvers,
-            startingOvers: start,
-            calculationData: data.calculationData,
-            gameData: data.gameData
-          },
-          this.initglobalValue(start)
-        );
+        if (!savedFile) {
+          self.setState(
+            {
+              gameID: data.gameID,
+              totalOvers: data.totalOvers,
+              startingOvers: start,
+              calculationData: data.calculationData
+            },
+            this.initglobalValue(start)
+          );
+        } else {
+          self.setState({
+            calculationData: data.calculationData
+          });
+        }
       }
     } catch (error) {
       // Error retrieving data
     }
   };
-  componentDidMount = () => {
+  async componentDidMount() {
+    console.log("Inning 1 Mounted");
+    const val = JSON.parse(await AsyncStorage.getItem("tempGame"));
+    if (val.Inning1.gameID) {
+      await this._retrieveData(true);
+      await this.loadGame(val.Inning1);
+    } else {
+      await this._retrieveData(false);
+    }
     this.props.navigation.addListener("willFocus", this.load);
     // this.props.navigation.addListener("willBlur", this.save);
-    this._retrieveData();
+  }
+
+  loadGame = async val => {
+    this.setState(
+      {
+        edit: val.edit,
+        editInterupt: val.editInterupt,
+        gameID: val.gameID,
+        missing: val.missing,
+        acc: val.acc,
+        ac: val.ac,
+        R1: val.R1,
+        totalOvers: val.totalOvers,
+        startingOvers: val.startingOvers,
+        interupts: val.interupts,
+        dialog: val.dialog,
+        globalValue: val.globalValue
+      },
+      () => {
+        this.recalculate();
+      }
+    );
   };
+
   load = async () => {
     const self = this;
-    console.log("Loading Inning 2 Data");
     try {
       const value = await AsyncStorage.getItem("Inning2");
       if (value !== null) {
         const start = JSON.parse(value).size > 0;
-        self.setState(
-          {
-            block: start
-          },
-          console.log("Inning 2 Data Loaded")
-        );
+        self.setState({
+          block: start
+        });
       }
     } catch (error) {
       // Error retrieving data
@@ -164,7 +195,6 @@ export default class InningOne extends React.Component {
     let newList = this.state.interupts;
     this.removeR1(oldInterrupt.id);
     newList[interruptIndex] = newInterrupt;
-    console.log("NEW LIST", newList);
     this.setState({ interupts: newList }, () => {
       this.recalculate();
     });
@@ -216,7 +246,6 @@ export default class InningOne extends React.Component {
       this.generateCards();
       try {
         await AsyncStorage.mergeItem("Inning1", JSON.stringify(data));
-        console.log("Inning 1 Saved", data);
       } catch (error) {
         console.log(error);
         // Error saving data
@@ -236,6 +265,34 @@ export default class InningOne extends React.Component {
     this.setState({ interupts: inter }, () => {
       this.recalculate();
     });
+  };
+
+  backupData = async () => {
+    const data = {
+      edit: this.state.edit,
+      editInterupt: this.state.editInterupt,
+      gameID: this.state.gameID,
+      missing: this.state.missing,
+      acc: this.state.acc,
+      ac: this.state.ac,
+      R1: this.state.R1,
+      totalOvers: this.state.totalOvers,
+      startingOvers: this.state.startingOvers,
+      interupts: this.state.interupts,
+      dialog: this.state.dialog,
+      globalValue: this.state.globalValue
+    };
+
+    console.log("Backingup Inning 1");
+    try {
+      let value = JSON.parse(await AsyncStorage.getItem("tempGame"));
+      value.Inning1 = data;
+      await AsyncStorage.mergeItem("tempGame", JSON.stringify(value));
+      console.log("Inning 1 BackedUp");
+    } catch (error) {
+      console.log(error);
+      // Error saving data
+    }
   };
 
   generateCards = () => {
@@ -275,7 +332,7 @@ export default class InningOne extends React.Component {
 
             <Text>{interupt.time.toString()}</Text>
 
-            <Text>{interupt.id}</Text>
+            {/* <Text>{interupt.id}</Text> */}
 
             <View
               style={{
@@ -319,7 +376,7 @@ export default class InningOne extends React.Component {
       );
     });
 
-    this.setState({ cardString: data });
+    this.setState({ cardString: data }, this.backupData);
   };
 
   render() {

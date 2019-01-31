@@ -8,15 +8,15 @@ class Interrupt extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      score: 50,
+      score: 0,
       edit: false,
       editInterupt: {},
-      wickets: 3,
+      wickets: 0,
       totalOvers: 0,
       oversBowledBall: 0,
       oversLostBall: 0,
-      oversBowled: 20,
-      oversLost: 10,
+      oversBowled: 0,
+      oversLost: 0,
       oversLeft: 0
     };
   }

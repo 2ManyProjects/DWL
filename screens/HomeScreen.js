@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  SafeAreaView,
   Image,
   Platform,
   ScrollView,
@@ -11,6 +12,8 @@ import {
 } from "react-native";
 import { AsyncStorage } from "react-native";
 import data from "../raw/data";
+import { Card } from "react-native-elements";
+import Dialog from "react-native-dialog";
 //
 export default class HomeScreen extends React.Component {
   constructor(props) {
@@ -20,11 +23,13 @@ export default class HomeScreen extends React.Component {
     // });
 
     this.state = {
-      gameID: "uyfgfjgfg",
-      totalOvers: 50,
-      startingOvers: 50,
+      gameID: "",
+      dataString: null,
+      open: false,
+      totalOvers: 0,
+      startingOvers: 0,
+      games: [],
       calculationData: data,
-      gameData: {},
       submit: false
     };
   }
@@ -84,13 +89,18 @@ export default class HomeScreen extends React.Component {
     });
   };
 
-  onLoad = () => {};
-
   _storeData = async data => {
     const self = this;
     try {
       await AsyncStorage.setItem("GlobalData", JSON.stringify(data));
       await AsyncStorage.setItem("Inning2", JSON.stringify({ size: 0 }));
+      await AsyncStorage.setItem(
+        "tempGame",
+        JSON.stringify({
+          Inning1: {},
+          Inning2: {}
+        })
+      );
       await AsyncStorage.setItem(
         "Inning1",
         JSON.stringify({
@@ -98,7 +108,6 @@ export default class HomeScreen extends React.Component {
           R1: 100
         })
       );
-      console.log("All Keys", await AsyncStorage.getAllKeys());
       self.props.navigation.navigate("Main");
     } catch (error) {
       console.log(error);
@@ -106,13 +115,36 @@ export default class HomeScreen extends React.Component {
     }
   };
 
-  onSubmit = () => {
+  openDialog = async () => {
+    let titles = await AsyncStorage.getAllKeys();
+    titles = titles.filter(function(val) {
+      return !(
+        val === "GlobalData" ||
+        val === "Inning2" ||
+        val === "Inning1" ||
+        val === "tempGame"
+      );
+    });
+    this.setState({ games: titles, open: true }, () => {
+      this.generateCards();
+    });
+  };
+
+  handleCancel = () => {
+    this.setState({ open: false, games: [], dataString: null });
+  };
+
+  onSubmit = async () => {
+    let titles = await AsyncStorage.getAllKeys();
+    if (titles.indexOf(this.state.gameID) > -1)
+      alert(
+        "This game ID is already in use, saving this match will overwrite the past file"
+      );
     const data = {
       gameID: this.state.gameID,
       totalOvers: this.state.totalOvers,
       startingOvers: this.state.startingOvers,
-      calculationData: this.state.calculationData,
-      gameData: this.state.gameData
+      calculationData: this.state.calculationData
     };
     this._storeData(data);
   };
@@ -121,6 +153,78 @@ export default class HomeScreen extends React.Component {
     if (this.state[input] && this.state[input] != 0)
       return this.state[input].toString();
     else return "";
+  };
+
+  load = async key => {
+    const self = this;
+    const data = JSON.parse(await AsyncStorage.getItem(key));
+    try {
+      await AsyncStorage.mergeItem("tempGame", JSON.stringify(data));
+      self.setState({ open: false }, () => {
+        self.props.navigation.navigate("Main");
+      });
+    } catch (error) {
+      console.log(error);
+      // Error saving data
+    }
+  };
+
+  delete = async key => {
+    await AsyncStorage.removeItem(key);
+    let titles = this.state.games;
+    titles.splice(titles.indexOf(key), 1);
+    this.setState({ games: titles }, this.generateCards());
+  };
+
+  generateCards = () => {
+    let data = "";
+
+    const style = {
+      flex: 1,
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 10
+    }; //
+    data = this.state.games.map((game, index) => {
+      return (
+        <Card key={index}>
+          <View style={style}>
+            <Text style={{ flex: 1, flexDirection: "row" }}>
+              Game ID: {game}
+            </Text>
+
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                justifyContent: "center",
+                marginTop: 10,
+                alignItems: "center"
+              }}
+            >
+              <Button
+                onPress={() => {
+                  this.load(game);
+                }}
+                title="Load"
+                color="#FF8800"
+              />
+              <Text>{"     "}</Text>
+              <Button
+                onPress={() => {
+                  this.delete(game);
+                }}
+                title="Delete"
+                color="#FF8800"
+              />
+            </View>
+          </View>
+        </Card>
+      );
+    });
+
+    this.setState({ dataString: data });
   };
 
   render() {
@@ -202,8 +306,22 @@ export default class HomeScreen extends React.Component {
             color="#FF8800"
           />
           <Text>{"     "}</Text>
-          <Button onPress={this.onLoad} title="Load" color="#FF8800" />
+          <Button
+            onPress={() => {
+              this.openDialog();
+            }}
+            title="Load"
+            color="#FF8800"
+          />
         </View>
+
+        <Dialog.Container visible={this.state.open}>
+          <Dialog.Title>Load or Delete</Dialog.Title>
+          <Dialog.Description> </Dialog.Description>
+
+          <ScrollView>{this.state.dataString}</ScrollView>
+          <Dialog.Button label="Cancel" onPress={this.handleCancel} />
+        </Dialog.Container>
       </ScrollView>
     );
   }
