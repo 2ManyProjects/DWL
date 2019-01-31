@@ -9,6 +9,8 @@ class Interrupt extends Component {
     super(props);
     this.state = {
       score: 50,
+      edit: false,
+      editInterupt: {},
       wickets: 3,
       totalOvers: 0,
       oversBowledBall: 0,
@@ -68,6 +70,20 @@ class Interrupt extends Component {
   };
 
   componentWillReceiveProps(props) {
+    // console.log("Props", this.props);
+    if (this.props.willEdit) {
+      this.setState({
+        score: this.props.interupt.score,
+        wickets: this.props.interupt.wickets,
+        oversBowled: this.props.interupt.oversBowled,
+        oversBowledBall: this.props.interupt.oversBowledBall,
+        oversLostBall: this.props.interupt.oversLostBall,
+        oversLost: this.props.interupt.oversLost,
+        oversLeft: this.props.interupt.oversLeft,
+        edit: this.props.willEdit,
+        editInterupt: this.props.interupt
+      });
+    }
     this.setState({ totalOvers: this.props.globals[2] - this.props.missing });
   }
 
@@ -80,15 +96,23 @@ class Interrupt extends Component {
       BowledBalls = this.state.oversBowledBall / 10;
     if (this.state.oversLostBall > 0)
       BowledBalls = this.state.oversLostBall / 10;
-    const data = {
+    let data = {
       score: this.state.score,
       wickets: this.state.wickets,
       oversBowled: this.state.oversBowled + BowledBalls,
       oversLost: this.state.oversLost + LostBalls,
       oversLeft: subtractOvers(this.state.totalOvers, this.state.oversBowled)
     };
-    this.props.create(data);
-    this.handleCancel();
+    if (this.state.edit) {
+      const editInterupt = this.state.editInterupt;
+      data["id"] = editInterupt.id;
+      data["time"] = editInterupt.time;
+      this.handleCancel();
+      this.props.edit(editInterupt, data);
+    } else {
+      this.handleCancel();
+      this.props.create(data);
+    }
   };
   getTitle = () => {
     return "Inning of " + this.state.totalOvers.toString();
@@ -98,6 +122,8 @@ class Interrupt extends Component {
     this.setState(
       {
         score: 0,
+        edit: false,
+        editInterupt: {},
         wickets: 0,
         oversBowled: 0,
         oversBowledBall: 0,

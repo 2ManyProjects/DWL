@@ -95,7 +95,7 @@ export default class HomeScreen extends React.Component {
         "Inning1",
         JSON.stringify({
           missing: 0,
-          R1: 0
+          R1: 100
         })
       );
       console.log("All Keys", await AsyncStorage.getAllKeys());

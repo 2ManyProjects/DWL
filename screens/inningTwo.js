@@ -22,15 +22,20 @@ export default class InningTwo extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      edit: false,
+      editInterupt: {},
       score: -5,
       open: true,
       init: true,
+      reset: false,
       gameID: "",
+      R2: 100.0,
+      initialMissing: 0,
       targetScore: 0,
       missing: 0,
       acc: 0.0,
       ac: [],
-      R1: 0.0,
+      R1: 100.0,
       totalOvers: null,
       startingOvers: null,
       calculationData: {},
@@ -96,6 +101,7 @@ export default class InningTwo extends React.Component {
   load = async () => {
     console.log("Loading Inning 1 Data");
     const self = this;
+    if (this.state.reset) this.setState({ reset: false, open: true });
     try {
       const value = await AsyncStorage.getItem("Inning1");
       if (value !== null) {
@@ -103,6 +109,7 @@ export default class InningTwo extends React.Component {
         self.setState(
           {
             missing: data.missing,
+            initialMissing: data.missing,
             R1: data.R1
           },
           console.log("Inning 1 Data Loaded", data)
@@ -129,10 +136,15 @@ export default class InningTwo extends React.Component {
   // };
 
   closeInterrupt = () => {
-    this.setState({ dialog: false });
+    this.setState({
+      dialog: false,
+      edit: false,
+      editInterupt: {},
+      missingEditOvers: 0
+    });
   };
 
-  openInterrupt = () => {
+  openInterrupt = (edit, interupt) => {
     if (this.state.init) {
       let temp = this.state.globalValue[2] - this.state.missing;
       temp *= 10;
@@ -141,25 +153,14 @@ export default class InningTwo extends React.Component {
         this.calculate();
       });
     }
-    this.setState({ dialog: true });
-  };
-
-  calculate = () => {
-    let R2 =
-      this.state.calculationData[
-        (this.state.globalValue[2] - this.state.missing) * 10
-      ][0] - parseFloat(this.state.acc);
-    let targetScore = 0;
-    if (R2 > this.state.R1) {
-      targetScore = Math.floor(
-        this.state.score +
-          (this.state.globalValue[0] * (R2 - this.state.R1)) / 100 +
-          1
-      );
-    } else {
-      targetScore = Math.floor(this.state.score * (R2 / this.state.R1) + 1);
-    }
-    this.setState({ R2: R2, targetScore: targetScore });
+    if (!edit) this.setState({ dialog: true, edit: false, editInterupt: {} });
+    else
+      this.setState({
+        dialog: true,
+        edit: true,
+        editInterupt: interupt,
+        missingEditOvers: interupt.oversLost * 2
+      });
   };
 
   create = data => {
@@ -180,21 +181,31 @@ export default class InningTwo extends React.Component {
         console.log(error);
         // Error saving data
       }
-      this.calculateR2();
-      this.generateCards();
+      this.recalculate();
     });
   };
 
-  calculateR2 = () => {
-    if (this.state.interupts.length > 0) {
-      let missingOvers = this.state.missing;
-      let acc = parseFloat(this.state.acc);
-      let ac = this.state.ac;
-      let data = this.state.calculationData;
-      let lastadded = this.state.interupts[this.state.interupts.length - 1];
+  edit = (oldInterrupt, newInterrupt) => {
+    const interruptIndex = this.state.interupts.indexOf(oldInterrupt);
+    let newList = this.state.interupts;
+    this.removeR2(oldInterrupt.id);
+    newList[interruptIndex] = newInterrupt;
+    console.log("NEW LIST", newList);
+    this.setState({ interupts: newList }, () => {
+      this.recalculate();
+    });
+  };
+
+  recalculate = () => {
+    let missingOvers = this.state.initialMissing;
+    let acc = 0.0;
+    let ac = [];
+    let data = this.state.calculationData;
+    for (let x = 0; x < this.state.interupts.length; x++) {
+      let lastadded = this.state.interupts[x];
       let lastaddedOversLost = lastadded.oversLost;
       let lastaddedOversLeft = lastadded.oversLeft;
-      let temp = (lastaddedOversLeft - lastaddedOversLost) * 10;
+      let temp = Math.floor((lastaddedOversLeft - lastaddedOversLost) * 10);
       let wickets = lastadded.wickets;
       acc =
         acc +
@@ -204,50 +215,57 @@ export default class InningTwo extends React.Component {
         data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
       );
       missingOvers += lastaddedOversLost;
-      // console.log(
-      //   "Calculation",
-      //   data[Math.floor(lastaddedOversLeft) * 10][wickets] +
-      //     " - " +
-      //     data[temp][wickets]
-      // );
-      // console.log("Acc:", acc.toFixed(1));
-
-      this.setState(
-        { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
-        () => {
-          this.calculate();
-        }
+      console.log(
+        "Calculation",
+        data[Math.floor(lastaddedOversLeft) * 10][wickets] +
+          " - " +
+          data[temp][wickets]
       );
+      console.log("Acc:", acc.toFixed(1));
     }
+    this.setState(
+      { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
+      () => {
+        this.calculate();
+      }
+    );
+  };
+
+  calculate = () => {
+    let R2 =
+      this.state.calculationData[
+        (this.state.globalValue[2] - this.state.missing) * 10
+      ][0] - parseFloat(this.state.acc);
+    let targetScore = 0;
+    if (R2 > this.state.R1) {
+      targetScore = Math.floor(
+        this.state.score +
+          (this.state.globalValue[0] * (R2 - this.state.R1)) / 100 +
+          1
+      );
+    } else {
+      targetScore = Math.floor(this.state.score * (R2 / this.state.R1) + 1);
+    }
+    console.log("R2", R2);
+    console.log("targetScore", targetScore);
+
+    this.setState({ R2: R2, targetScore: targetScore });
+
+    this.generateCards();
   };
 
   removeR2 = id => {
     let inter = this.state.interupts;
-    let missingOvers = this.state.missing;
-    let ac = this.state.ac;
-    let temp;
     for (let i = 0; i < inter.length; i++) {
       if (inter[i].id === id) {
-        temp = inter[i];
         inter.splice(i, 1);
-        ac.splice(i, 1);
         break;
       }
     }
 
-    missingOvers -= Math.floor(temp.oversLost / 2);
-    let acc = 0.0;
-    for (let i = 0; i < ac.length; i++) {
-      acc += ac[i];
-    }
-    this.setState(
-      { acc: acc, ac: ac, missing: missingOvers, interupts: inter },
-      () => {
-        // console.log("Acc: ", acc);
-        this.calculateR2();
-        this.generateCards();
-      }
-    );
+    this.setState({ interupts: inter }, () => {
+      this.recalculate();
+    });
   };
   onChange = (event, id) => {
     const value = event.nativeEvent.text;
@@ -320,7 +338,7 @@ export default class InningTwo extends React.Component {
             >
               <Button
                 onPress={() => {
-                  alert("pressed Edit");
+                  this.openInterrupt(true, interupt);
                 }}
                 title="Edit"
                 color="#FF8800"
@@ -358,6 +376,10 @@ export default class InningTwo extends React.Component {
         <ScrollView>{this.state.cardString}</ScrollView>
         <Interrupt
           inning={2}
+          edit={this.edit}
+          willEdit={this.state.edit}
+          interupt={this.state.editInterupt}
+          missingOver={this.state.missingEditOvers}
           create={this.create}
           closeInterrupt={this.closeInterrupt}
           open={this.state.dialog}
@@ -368,10 +390,52 @@ export default class InningTwo extends React.Component {
         <FloatingAction
           position="center"
           showBackground={false}
-          onPressMain={this.openInterrupt}
+          onPressMain={() => {
+            this.openInterrupt(false, {});
+          }}
         />
-        <View>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "flex-start",
+            alignItems: "flex-end"
+          }}
+        >
           <Text>Target: {this.state.targetScore.toString()}</Text>
+          <Button
+            title="Reset"
+            color="#FF8800"
+            onPress={() => {
+              this.setState(
+                {
+                  score: -5,
+                  targetScore: 0,
+                  initialMissing: 0,
+                  reset: true,
+                  init: true,
+                  interupts: [],
+                  acc: 100.0,
+                  ac: [],
+                  missing: 0
+                },
+                async () => {
+                  try {
+                    await AsyncStorage.mergeItem(
+                      "Inning2",
+                      JSON.stringify({ size: 0 })
+                    );
+                    console.log("Inning 2 Saved", 0);
+                  } catch (error) {
+                    console.log(error);
+                    // Error saving data
+                  }
+                }
+              );
+            }}
+          >
+            Reset
+          </Button>
         </View>
 
         <Dialog.Container visible={this.state.open}>

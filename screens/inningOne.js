@@ -21,10 +21,13 @@ export default class InningOne extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      edit: false,
+      editInterupt: {},
       gameID: "", //
       missing: 0, //
       acc: 0.0,
       ac: [],
+      missingEditOvers: 0,
       R1: 100.0, //
       totalOvers: null,
       startingOvers: null,
@@ -122,14 +125,26 @@ export default class InningOne extends React.Component {
   // };
 
   closeInterrupt = () => {
-    this.setState({ dialog: false });
+    this.setState({
+      dialog: false,
+      edit: false,
+      editInterupt: {},
+      missingEditOvers: 0
+    });
   };
 
-  openInterrupt = () => {
+  openInterrupt = (edit, interupt) => {
     if (this.state.block) {
       alert("Please Clear interupts from Inning 2 before modifying Inning 1");
     } else {
-      this.setState({ dialog: true });
+      if (!edit) this.setState({ dialog: true, edit: false, editInterupt: {} });
+      else
+        this.setState({
+          dialog: true,
+          edit: true,
+          editInterupt: interupt,
+          missingEditOvers: interupt.oversLost * 2
+        });
     }
   };
 
@@ -140,23 +155,32 @@ export default class InningOne extends React.Component {
     tempData["id"] = generateGuid();
     interruptArray.push(tempData);
     this.setState({ interupts: interruptArray }, () => {
-      this.calculaterR1();
-      this.generateCards();
+      this.recalculate();
+      //this.calculaterR1();
+    });
+  };
+  edit = (oldInterrupt, newInterrupt) => {
+    const interruptIndex = this.state.interupts.indexOf(oldInterrupt);
+    let newList = this.state.interupts;
+    this.removeR1(oldInterrupt.id);
+    newList[interruptIndex] = newInterrupt;
+    console.log("NEW LIST", newList);
+    this.setState({ interupts: newList }, () => {
+      this.recalculate();
     });
   };
 
-  calculaterR1 = () => {
-    if (this.state.interupts.length > 0) {
-      let missingOvers = this.state.missing;
-      let acc = parseFloat(this.state.acc);
-      let ac = this.state.ac;
-      let data = this.state.calculationData;
-      let lastadded = this.state.interupts[this.state.interupts.length - 1];
+  recalculate = () => {
+    let missingOvers = 0;
+    let acc = 0.0;
+    let ac = [];
+    let data = this.state.calculationData;
+    for (let x = 0; x < this.state.interupts.length; x++) {
+      let lastadded = this.state.interupts[x];
       let lastaddedOversLost = lastadded.oversLost;
       let lastaddedOversLeft = lastadded.oversLeft;
       let temp = Math.floor((lastaddedOversLeft - lastaddedOversLost / 2) * 10);
       let wickets = lastadded.wickets;
-
       acc =
         acc +
         (data[Math.floor(lastaddedOversLeft) * 10][wickets] -
@@ -165,24 +189,21 @@ export default class InningOne extends React.Component {
         data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
       );
       missingOvers += lastaddedOversLost / 2;
-      // console.log(
-      //   "Calculation",
-      //   data[Math.floor(lastaddedOversLeft) * 10][wickets] +
-      //     " - " +
-      //     data[temp][wickets]
-      // );
-      // console.log("Acc: ", acc.toFixed(1));
-
-      this.setState(
-        { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
-        () => {
-          this.getR1();
-        }
-      );
     }
+    this.setState(
+      { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
+      () => {
+        this.calculateR1();
+      }
+    );
   };
 
-  getR1 = () => {
+  calculateR1 = () => {
+    console.log(
+      "start",
+      this.state.calculationData[this.state.globalValue[2] * 10][0]
+    );
+    console.log("-", parseFloat(this.state.acc));
     let R1 =
       this.state.calculationData[this.state.globalValue[2] * 10][0] -
       parseFloat(this.state.acc);
@@ -191,6 +212,8 @@ export default class InningOne extends React.Component {
         missing: this.state.missing,
         R1: this.state.R1
       };
+
+      this.generateCards();
       try {
         await AsyncStorage.mergeItem("Inning1", JSON.stringify(data));
         console.log("Inning 1 Saved", data);
@@ -204,31 +227,15 @@ export default class InningOne extends React.Component {
 
   removeR1 = id => {
     let inter = this.state.interupts;
-    let missingOvers = this.state.missing;
-    let ac = this.state.ac;
-    let temp;
     for (let i = 0; i < inter.length; i++) {
       if (inter[i].id === id) {
-        temp = inter[i];
         inter.splice(i, 1);
-        ac.splice(i, 1);
         break;
       }
     }
-
-    missingOvers -= Math.floor(temp.oversLost / 2);
-    let acc = 0.0;
-    for (let i = 0; i < ac.length; i++) {
-      acc += ac[i];
-    }
-    this.setState(
-      { acc: acc, ac: ac, missing: missingOvers, interupts: inter },
-      () => {
-        // console.log("Acc: ", acc);
-        this.getR1();
-        this.generateCards();
-      }
-    );
+    this.setState({ interupts: inter }, () => {
+      this.recalculate();
+    });
   };
 
   generateCards = () => {
@@ -286,7 +293,7 @@ export default class InningOne extends React.Component {
                       "Please Clear interupts from Inning 2 before modifying Inning 1"
                     );
                   } else {
-                    alert("pressed Edit");
+                    this.openInterrupt(true, interupt);
                   }
                 }}
                 title="Edit"
@@ -325,6 +332,10 @@ export default class InningOne extends React.Component {
         <ScrollView>{this.state.cardString}</ScrollView>
         <Interrupt
           inning={1}
+          edit={this.edit}
+          willEdit={this.state.edit}
+          interupt={this.state.editInterupt}
+          missingOver={this.state.missingEditOvers}
           create={this.create}
           closeInterrupt={this.closeInterrupt}
           open={this.state.dialog}
@@ -335,7 +346,9 @@ export default class InningOne extends React.Component {
         <FloatingAction
           position="center"
           showBackground={false}
-          onPressMain={this.openInterrupt}
+          onPressMain={() => {
+            this.openInterrupt(false);
+          }}
         />
       </SafeAreaView>
     );
