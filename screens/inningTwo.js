@@ -494,19 +494,21 @@ export default class InningTwo extends React.Component {
         <Dialog.Container visible={this.state.open}>
           <Dialog.Title>Inning 2 Setup</Dialog.Title>
           <Dialog.Description> </Dialog.Description>
-          <View>
-            <Dialog.Input
-              label="Inning 1 Score"
-              onChange={event => {
-                this.onChange(event, "score");
-              }}
-              value={this.getValue("score")}
-              underlineColorAndroid="#000"
-              style={dependant.OS}
-              keyboardType="numeric"
-            />
-            <Dialog.Button label="Submit" onPress={this.Submit} />
-          </View>
+          <KeyboardAwareScrollView>
+            <View>
+              <Dialog.Input
+                label="Inning 1 Score"
+                onChange={event => {
+                  this.onChange(event, "score");
+                }}
+                value={this.getValue("score")}
+                underlineColorAndroid="#000"
+                style={dependant.OS}
+                keyboardType="numeric"
+              />
+              <Dialog.Button label="Submit" onPress={this.Submit} />
+            </View>
+          </KeyboardAwareScrollView>
         </Dialog.Container>
       </SafeAreaView>
     );
