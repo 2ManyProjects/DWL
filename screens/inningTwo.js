@@ -14,6 +14,8 @@ import { FloatingAction } from "react-native-floating-action";
 import Interrupt from "../components/addInterrupt";
 import { subtractOvers, generateGuid } from "../components/helpers";
 import { Card } from "react-native-elements";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Init from "./Init";
 
 export default class InningTwo extends React.Component {
   static navigationOptions = {
@@ -170,7 +172,7 @@ export default class InningTwo extends React.Component {
       let temp = this.state.globalValue[2] - this.state.missing;
       temp *= 10;
       let R2 = this.state.calculationData[temp][0];
-      this.setState({ R2: R2 }, () => {
+      this.setState({ R2: R2, init: false }, () => {
         this.calculate();
       });
     }
@@ -264,8 +266,10 @@ export default class InningTwo extends React.Component {
     } else {
       targetScore = Math.floor(this.state.score * (R2 / this.state.R1) + 1);
     }
-    // console.log("R2", R2);
-    // console.log("targetScore", targetScore);
+    console.log("Score", this.state.score);
+    console.log("R1", this.state.R1);
+    console.log("R2", R2);
+    console.log("targetScore", targetScore);
 
     this.setState({ R2: R2, targetScore: targetScore });
 
@@ -285,25 +289,11 @@ export default class InningTwo extends React.Component {
       this.recalculate();
     });
   };
-  onChange = (event, id) => {
-    const value = event.nativeEvent.text;
-    if (/^\d+$/.test(value)) {
-      this.setState({ [id]: parseInt(value) });
-    } else if (value.length === 0) {
-      this.setState({ [id]: 0 });
-    } else {
-      this.setState({ [id]: this.state[id] });
-    }
-  };
 
-  Submit = () => {
-    if (this.state.score > 0) {
-      this.setState({ open: false }, () => {
-        this.calculate();
-      });
-    } else {
-      alert("Score Cannot be less than 1");
-    }
+  Submit = val => {
+    this.setState({ open: false, score: val }, () => {
+      this.calculate();
+    });
   };
 
   backupData = async () => {
@@ -420,12 +410,8 @@ export default class InningTwo extends React.Component {
   };
 
   render() {
-    const { navigation, screenProps } = this.props;
     return (
       <SafeAreaView style={styles.container}>
-        <View>
-          <Text> </Text>
-        </View>
         <ScrollView>{this.state.cardString}</ScrollView>
         <Interrupt
           inning={2}
@@ -439,89 +425,55 @@ export default class InningTwo extends React.Component {
           missing={this.state.missing}
           globals={this.state.globalValue}
         />
-        {/* <Button title="Add" onPress={this.openInterrupt} /> */}
-        <FloatingAction
-          position="center"
-          showBackground={false}
-          onPressMain={() => {
-            this.openInterrupt(false, {});
-          }}
-        />
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "flex-start",
-            alignItems: "flex-end"
-          }}
-        >
-          <Text>Target: {this.state.targetScore.toString()}</Text>
-          <Button
-            title="Reset"
-            color="#FF8800"
-            onPress={() => {
-              this.setState(
-                {
-                  score: -5,
-                  targetScore: 0,
-                  initialMissing: 0,
-                  reset: true,
-                  init: true,
-                  interupts: [],
-                  acc: 100.0,
-                  ac: [],
-                  missing: 0
-                },
-                async () => {
-                  try {
-                    await AsyncStorage.mergeItem(
-                      "Inning2",
-                      JSON.stringify({ size: 0 })
-                    );
-                    console.log("Inning 2 Saved", 0);
-                  } catch (error) {
-                    console.log(error);
-                    // Error saving data
-                  }
-                }
-              );
-            }}
-          >
-            Reset
-          </Button>
-        </View>
 
-        <Dialog.Container visible={this.state.open}>
-          <Dialog.Title>Inning 2 Setup</Dialog.Title>
-          <Dialog.Description> </Dialog.Description>
-          <KeyboardAwareScrollView>
-            <View>
-              <Dialog.Input
-                label="Inning 1 Score"
-                onChange={event => {
-                  this.onChange(event, "score");
-                }}
-                value={this.getValue("score")}
-                underlineColorAndroid="#000"
-                style={dependant.OS}
-                keyboardType="numeric"
-              />
-              <Dialog.Button label="Submit" onPress={this.Submit} />
-            </View>
-          </KeyboardAwareScrollView>
-        </Dialog.Container>
+        <View style={[{ paddingTop: 15 }]}>
+          <FloatingAction
+            position="center"
+            showBackground={false}
+            onPressMain={() => {
+              this.openInterrupt(false);
+            }}
+          />
+          <Text>Target: {this.state.targetScore.toString()}</Text>
+          <View style={[{ width: "30%", margin: 10 }]}>
+            <Button
+              title="Reset"
+              color="#FF8800"
+              onPress={() => {
+                this.setState(
+                  {
+                    score: -5,
+                    targetScore: 0,
+                    initialMissing: 0,
+                    reset: true,
+                    init: true,
+                    interupts: [],
+                    acc: 100.0,
+                    ac: [],
+                    missing: 0
+                  },
+                  async () => {
+                    try {
+                      await AsyncStorage.mergeItem(
+                        "Inning2",
+                        JSON.stringify({ size: 0 })
+                      );
+                      console.log("Inning 2 Saved", 0);
+                    } catch (error) {
+                      console.log(error);
+                      // Error saving data
+                    }
+                  }
+                );
+              }}
+            />
+            <Init open={this.state.open} closeInit={this.Submit} />
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
 }
-
-const dependant = StyleSheet.create({
-  OS: {
-    borderBottomWidth: Platform.OS === "ios" ? 1 : 0,
-    borderBottomColor: "#000"
-  }
-});
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

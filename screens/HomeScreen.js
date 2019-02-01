@@ -23,11 +23,11 @@ export default class HomeScreen extends React.Component {
     // });
 
     this.state = {
-      gameID: "",
+      gameID: "asdasd",
       dataString: null,
       open: false,
-      totalOvers: 0,
-      startingOvers: 0,
+      totalOvers: 50,
+      startingOvers: 50,
       games: [],
       calculationData: data,
       submit: false
