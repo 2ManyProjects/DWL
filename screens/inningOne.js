@@ -38,7 +38,7 @@ export default class InningOne extends React.Component {
       cardString: null,
       globalValue: [0, 0, 0]
     };
-    console.log("Inning 1 contructed");
+    // console.log("Inning 1 contructed");
   }
 
   initglobalValue = val => {
@@ -91,7 +91,7 @@ export default class InningOne extends React.Component {
     }
   };
   async componentDidMount() {
-    console.log("Inning 1 Mounted");
+    // console.log("Inning 1 Mounted");
     const val = JSON.parse(await AsyncStorage.getItem("tempGame"));
     if (val.Inning1.gameID) {
       await this._retrieveData(true);
@@ -130,6 +130,7 @@ export default class InningOne extends React.Component {
     try {
       const value = await AsyncStorage.getItem("Inning2");
       if (value !== null) {
+        console.log("Value ", value);
         const start = JSON.parse(value).size > 0;
         self.setState({
           block: start
@@ -166,7 +167,7 @@ export default class InningOne extends React.Component {
 
   openInterrupt = (edit, interupt) => {
     if (this.state.block) {
-      alert("Please Clear interupts from Inning 2 before modifying Inning 1");
+      alert("Reset Inning 2 before modifying Inning 1");
     } else {
       if (!edit) this.setState({ dialog: true, edit: false, editInterupt: {} });
       else
@@ -209,7 +210,9 @@ export default class InningOne extends React.Component {
       let lastadded = this.state.interupts[x];
       let lastaddedOversLost = lastadded.oversLost;
       let lastaddedOversLeft = lastadded.oversLeft;
-      let temp = Math.floor((lastaddedOversLeft - lastaddedOversLost / 2) * 10);
+      let temp = Math.floor(
+        (lastaddedOversLeft - lastaddedOversLost) /* / 2*/ * 10
+      );
       let wickets = lastadded.wickets;
       acc =
         acc +
@@ -218,7 +221,7 @@ export default class InningOne extends React.Component {
       ac.push(
         data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
       );
-      missingOvers += lastaddedOversLost / 2;
+      missingOvers += lastaddedOversLost /* / 2*/;
     }
     this.setState(
       { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
@@ -229,14 +232,10 @@ export default class InningOne extends React.Component {
   };
 
   calculateR1 = () => {
-    console.log(
-      "start",
-      this.state.calculationData[this.state.globalValue[2] * 10][0]
-    );
-    console.log("-", parseFloat(this.state.acc));
     let R1 =
       this.state.calculationData[this.state.globalValue[2] * 10][0] -
       parseFloat(this.state.acc);
+    console.log("R1", R1);
     this.setState({ R1: R1 }, async () => {
       const data = {
         missing: this.state.missing,
@@ -288,7 +287,7 @@ export default class InningOne extends React.Component {
       let value = JSON.parse(await AsyncStorage.getItem("tempGame"));
       value.Inning1 = data;
       await AsyncStorage.mergeItem("tempGame", JSON.stringify(value));
-      console.log("Inning 1 BackedUp");
+      // console.log("Inning 1 BackedUp");
     } catch (error) {
       console.log(error);
       // Error saving data
@@ -399,14 +398,24 @@ export default class InningOne extends React.Component {
           missing={this.state.missing}
           globals={this.state.globalValue}
         />
-        {/* <Button title="Add" onPress={this.openInterrupt} /> */}
-        <FloatingAction
+        <View
+          style={[{ width: "30%", alignSelf: "center", paddingBottom: 15 }]}
+        >
+          <Button
+            title="Add Interrupt"
+            color="#FF8800"
+            onPress={() => {
+              this.openInterrupt(false);
+            }}
+          />
+        </View>
+        {/* <FloatingAction
           position="center"
           showBackground={false}
           onPressMain={() => {
             this.openInterrupt(false);
           }}
-        />
+        /> */}
       </SafeAreaView>
     );
   }

@@ -195,7 +195,7 @@ class Interrupt extends Component {
               }}
             >
               <Dialog.Input
-                label="Over Lost"
+                label="Over Lost Current Inning"
                 onChange={event => {
                   this.onChange(event, "oversLost");
                 }}
@@ -204,7 +204,7 @@ class Interrupt extends Component {
                 style={dependant.OS}
                 keyboardType="decimal-pad"
               />
-              <Dialog.Input
+              {/* <Dialog.Input
                 label="Balls Bowled"
                 onChange={event => {
                   this.onChange(event, "oversLostBall");
@@ -213,7 +213,7 @@ class Interrupt extends Component {
                 underlineColorAndroid="#000"
                 style={dependant.OS}
                 keyboardType="decimal-pad"
-              />
+              /> */}
             </View>
             <Text>
               Overs Left:{" "}

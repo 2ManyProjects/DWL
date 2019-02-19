@@ -46,7 +46,7 @@ export default class InningTwo extends React.Component {
       cardString: null,
       globalValue: [0, 0, 0]
     };
-    console.log("Inning 2 contructed");
+    // console.log("Inning 2 contructed");
   }
 
   initglobalValue = val => {
@@ -99,7 +99,7 @@ export default class InningTwo extends React.Component {
     }
   };
   async componentDidMount() {
-    console.log("Inning 2 Mounted");
+    // console.log("Inning 2 Mounted");
     const val = JSON.parse(await AsyncStorage.getItem("tempGame"));
     if (val.Inning2.gameID) {
       await this._retrieveData(true);
@@ -108,6 +108,7 @@ export default class InningTwo extends React.Component {
       this._retrieveData(false);
     }
     this.props.navigation.addListener("willFocus", this.load);
+    await this.load();
     // this.props.navigation.addListener("willBlur", this.save);
   }
 
@@ -142,11 +143,34 @@ export default class InningTwo extends React.Component {
 
   load = async () => {
     const self = this;
-    if (this.state.reset) this.setState({ reset: false, open: true });
+    if (this.state.reset) {
+      this.setState({
+        edit: false,
+        editInterupt: {},
+        score: -5,
+        open: true,
+        init: true,
+        reset: false,
+        gameID: "",
+        R2: 100.0,
+        initialMissing: 0,
+        targetScore: 0,
+        missing: 0,
+        acc: 0.0,
+        ac: [],
+        R1: 100.0,
+        totalOvers: null,
+        startingOvers: null,
+        interupts: [],
+        dialog: false,
+        cardString: null
+      });
+    }
     try {
       const value = await AsyncStorage.getItem("Inning1");
       if (value !== null) {
         const data = JSON.parse(value);
+        console.log("R1 DATA: ", data.R1);
         self.setState({
           missing: data.missing,
           initialMissing: data.missing,
@@ -291,6 +315,12 @@ export default class InningTwo extends React.Component {
   };
 
   Submit = val => {
+    try {
+      AsyncStorage.mergeItem("Inning2", JSON.stringify({ size: 1 }));
+    } catch (error) {
+      console.log(error);
+      // Error saving data
+    }
     this.setState({ open: false, score: val }, () => {
       this.calculate();
     });
@@ -319,12 +349,12 @@ export default class InningTwo extends React.Component {
       globalValue: this.state.globalValue
     };
 
-    console.log("Backingup Inning 2");
+    // console.log("Backingup Inning 2");
     try {
       let value = JSON.parse(await AsyncStorage.getItem("tempGame"));
       value.Inning2 = data;
       await AsyncStorage.mergeItem("tempGame", JSON.stringify(value));
-      console.log("Inning 2 BackedUp");
+      // console.log("Inning 2 BackedUp");
     } catch (error) {
       console.log(error);
       // Error saving data
@@ -427,13 +457,24 @@ export default class InningTwo extends React.Component {
         />
 
         <View style={[{ paddingTop: 15 }]}>
-          <FloatingAction
+          {/* <FloatingAction
             position="center"
             showBackground={false}
             onPressMain={() => {
               this.openInterrupt(false);
             }}
-          />
+          /> */}
+          <View
+            style={[{ width: "30%", alignSelf: "center", paddingBottom: 15 }]}
+          >
+            <Button
+              title="Add Interrupt"
+              color="#FF8800"
+              onPress={() => {
+                this.openInterrupt(false);
+              }}
+            />
+          </View>
           <Text>Target: {this.state.targetScore.toString()}</Text>
           <View style={[{ width: "30%", margin: 10 }]}>
             <Button
@@ -458,7 +499,7 @@ export default class InningTwo extends React.Component {
                         "Inning2",
                         JSON.stringify({ size: 0 })
                       );
-                      console.log("Inning 2 Saved", 0);
+                      // console.log("Inning 2 Saved", 0);
                     } catch (error) {
                       console.log(error);
                       // Error saving data
