@@ -14,6 +14,7 @@ import { AsyncStorage } from "react-native";
 import data from "../raw/data";
 import { Card } from "react-native-elements";
 import Dialog from "react-native-dialog";
+import Settings from "../components/Settings";
 //
 export default class HomeScreen extends React.Component {
   constructor(props) {
@@ -25,6 +26,7 @@ export default class HomeScreen extends React.Component {
     this.state = {
       gameID: "asdasd",
       dataString: null,
+      openSettings: false,
       open: false,
       totalOvers: 50,
       startingOvers: 50,
@@ -312,6 +314,29 @@ export default class HomeScreen extends React.Component {
             }}
             title="Load"
             color="#FF8800"
+          />
+        </View>
+        <Text>{"\n"}</Text>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          <Button
+            onPress={() => {
+              this.setState({ openSettings: !this.state.openSettings });
+            }}
+            title="Settings"
+            color="#FF8800"
+          />
+          <Settings
+            open={this.state.openSettings}
+            close={() => {
+              this.setState({ openSettings: false });
+            }}
           />
         </View>
 

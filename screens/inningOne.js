@@ -78,7 +78,9 @@ export default class InningOne extends React.Component {
               startingOvers: start,
               calculationData: data.calculationData
             },
-            this.initglobalValue(start)
+            () => {
+              this.initglobalValue(start);
+            }
           );
         } else {
           self.setState({
@@ -167,7 +169,7 @@ export default class InningOne extends React.Component {
 
   openInterrupt = (edit, interupt) => {
     if (this.state.block) {
-      alert("Reset Inning 2 before modifying Inning 1");
+      alert("Please Reset Inning 2 before modifying Inning 1");
     } else {
       if (!edit) this.setState({ dialog: true, edit: false, editInterupt: {} });
       else
@@ -188,7 +190,6 @@ export default class InningOne extends React.Component {
     interruptArray.push(tempData);
     this.setState({ interupts: interruptArray }, () => {
       this.recalculate();
-      //this.calculaterR1();
     });
   };
   edit = (oldInterrupt, newInterrupt) => {

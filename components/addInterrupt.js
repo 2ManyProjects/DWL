@@ -29,25 +29,30 @@ class Interrupt extends Component {
       let val = value;
       switch (id) {
         case "score":
-          this.setState({ [id]: parseInt(value) });
+          if (value != "0") this.setState({ [id]: parseInt(value) });
+          else this.setState({ [id]: 0 });
           break;
         case "wickets":
           if (val < 11) {
-            this.setState({ [id]: parseInt(value) });
+            if (value != "0") this.setState({ [id]: parseInt(value) });
+            else this.setState({ [id]: 0 });
           } else {
             alert("Invalid Number of Wickets");
           }
           break;
         case "oversBowled":
-          this.setState({ [id]: parseInt(value) });
+          if (value != "0") this.setState({ [id]: parseInt(value) });
+          else this.setState({ [id]: 0 });
           break;
         case "oversBowledBall":
-          if (value <= 6) this.setState({ [id]: parseInt(value) });
-          else alert("No more thank 6 balls in an over");
+          if (value <= 6) {
+            if (value != "0") this.setState({ [id]: parseInt(value) });
+            else this.setState({ [id]: 0 });
+          } else alert("No more thank 6 balls in an over");
           break;
         case "oversLost":
-          this.setState({ [id]: parseInt(value) });
-
+          if (value != "0") this.setState({ [id]: parseInt(value) });
+          else this.setState({ [id]: 0 });
           break;
         case "oversLostBall":
           if (value <= 6) this.setState({ [id]: parseInt(value) });

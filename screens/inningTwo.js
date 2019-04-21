@@ -86,7 +86,9 @@ export default class InningTwo extends React.Component {
               startingOvers: start,
               calculationData: data.calculationData
             },
-            this.initglobalValue(start)
+            () => {
+              this.initglobalValue(start);
+            }
           );
         } else {
           self.setState({
@@ -259,13 +261,13 @@ export default class InningTwo extends React.Component {
         data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
       );
       missingOvers += lastaddedOversLost;
-      // console.log(
-      //   "Calculation",
-      //   data[Math.floor(lastaddedOversLeft) * 10][wickets] +
-      //     " - " +
-      //     data[temp][wickets]
-      // );
-      // console.log("Acc:", acc.toFixed(1));
+      console.log(
+        "Calculation",
+        data[Math.floor(lastaddedOversLeft) * 10][wickets] +
+          " - " +
+          data[temp][wickets]
+      );
+      console.log("Acc:", acc.toFixed(1));
     }
     this.setState(
       { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
@@ -278,7 +280,7 @@ export default class InningTwo extends React.Component {
   calculate = () => {
     let R2 =
       this.state.calculationData[
-        (this.state.globalValue[2] - this.state.missing) * 10
+        (this.state.globalValue[2] - this.state.initialMissing) * 10
       ][0] - parseFloat(this.state.acc);
     let targetScore = 0;
     if (R2 > this.state.R1) {
@@ -290,6 +292,9 @@ export default class InningTwo extends React.Component {
     } else {
       targetScore = Math.floor(this.state.score * (R2 / this.state.R1) + 1);
     }
+    console.log("[X - ?] ", this.state.globalValue[2]);
+    console.log("[? - X]2 ", this.state.initialMissing);
+    console.log("Global Value ", this.state.globalValue[0]);
     console.log("Score", this.state.score);
     console.log("R1", this.state.R1);
     console.log("R2", R2);
