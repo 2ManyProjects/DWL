@@ -5,6 +5,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Picker,
   Text,
   Button,
   TextInput,
@@ -32,52 +33,76 @@ export default class HomeScreen extends React.Component {
       startingOvers: 50,
       games: [],
       calculationData: data,
-      submit: false
+      submit: false,
+      gameRule: [
+        { Overs: 15, G: 90, minOvers: 3, id: 0 },
+        { Overs: 20, G: 120, minOvers: 5, id: 1 },
+        { Overs: 25, G: 150, minOvers: 7, id: 2 },
+        { Overs: 50, G: 200, minOvers: 20, id: 3 }
+      ],
+      selectedRule: { Overs: 15, G: 90, minOvers: 3, id: 0 },
+      gameRuleStr: ""
     };
+    this.init();
   }
   static navigationOptions = {
     header: null
   };
 
-  onChanged = (input, overs) => {
+  init = async () => {
+    const self = this;
+    try {
+      let settings = await AsyncStorage.getItem("Settings");
+      const def = [
+        { Overs: 15, G: 90, minOvers: 3, id: 0 },
+        { Overs: 20, G: 120, minOvers: 5, id: 1 },
+        { Overs: 25, G: 150, minOvers: 7, id: 2 },
+        { Overs: 50, G: 200, minOvers: 20, id: 3 }
+      ];
+
+      if (settings !== null) {
+        this.setState(
+          {
+            gameRule: JSON.parse(settings),
+            selectedRule: JSON.parse(settings)[0]
+          },
+          () => {}
+        );
+      } else {
+        this.setState(
+          {
+            gameRule: def,
+            selectedRule: { Overs: 15, G: 90, minOvers: 3, id: 0 }
+          },
+          () => {}
+        );
+      }
+    } catch (error) {
+      // Error retrieving data
+    }
+  };
+
+  onChanged = input => {
     if (/^\d+$/.test(input)) {
       const value = parseInt(input);
-      if (overs)
-        this.setState({ totalOvers: value }, () => {
-          this.checkInputs();
-        });
-      else {
-        if (value <= this.state.totalOvers) {
-          this.setState({ startingOvers: value }, () => {
-            this.checkInputs();
-          });
-        } else {
-          this.setState({ startingOvers: 0 }, () => {
-            this.checkInputs();
-          });
-          alert("Starting Overs Cannot be Greater than Total Overs");
-        }
-      }
-    } else if (input.length === 0) {
-      if (overs) {
-        this.setState({ totalOvers: 0 }, () => {
+      if (value <= this.state.totalOvers) {
+        this.setState({ startingOvers: value }, () => {
           this.checkInputs();
         });
       } else {
         this.setState({ startingOvers: 0 }, () => {
           this.checkInputs();
         });
+        alert("Starting Overs Cannot be Greater than Total Overs");
       }
+    } else if (input.length === 0) {
+      this.setState({ startingOvers: 0 }, () => {
+        this.checkInputs();
+      });
     } else {
-      if (overs) {
-        this.setState({ totalOvers: this.state.totalOvers }, () => {
-          this.checkInputs();
-        });
-      } else {
-        this.setState({ startingOvers: this.state.startingOvers }, () => {
-          this.checkInputs();
-        });
-      }
+      this.setState({ startingOvers: this.state.startingOvers }, () => {
+        this.checkInputs();
+      });
     }
   };
 
@@ -144,9 +169,10 @@ export default class HomeScreen extends React.Component {
       );
     const data = {
       gameID: this.state.gameID,
-      totalOvers: this.state.totalOvers,
+      totalOvers: this.state.selectedRule.Overs,
       startingOvers: this.state.startingOvers,
-      calculationData: this.state.calculationData
+      calculationData: this.state.calculationData,
+      gameRule: this.state.selectedRule
     };
     this._storeData(data);
   };
@@ -262,20 +288,24 @@ export default class HomeScreen extends React.Component {
             maxLength={10}
           />
           <Text>{"\n"}</Text>
-          <TextInput
-            style={{
-              height: 40,
-              width: 200,
-              borderColor: "gray",
-              textAlign: "center",
-              borderWidth: 1
-            }}
-            keyboardType="numeric"
-            placeholder="Total Overs"
-            onChangeText={input => this.onChanged(input, true)}
-            value={this.getOvers("totalOvers")}
-            maxLength={2} //setting limit of input
-          />
+          <Picker
+            style={{ height: 50, width: 200 }}
+            selectedValue={this.state.selectedRule}
+            onValueChange={(itemValue, itemIndex) =>
+              this.setState({ selectedRule: itemValue }, () => {
+                console.log("SELECTED ", this.state.selectedRule);
+              })
+            }
+            mode="dropdown"
+          >
+            {this.state.gameRule.map((game, index) => (
+              <Picker.Item
+                key={index}
+                label={"Overs: " + game.Overs + ", G: " + game.G}
+                value={game}
+              />
+            ))}
+          </Picker>
           <Text>{"\n"}</Text>
           <TextInput
             style={{
@@ -287,7 +317,7 @@ export default class HomeScreen extends React.Component {
             }}
             keyboardType="numeric"
             placeholder="Starting Overs"
-            onChangeText={input => this.onChanged(input, false)}
+            onChangeText={input => this.onChanged(input)}
             value={this.getOvers("startingOvers")}
             maxLength={2} //setting limit of input
           />
@@ -334,6 +364,7 @@ export default class HomeScreen extends React.Component {
           />
           <Settings
             open={this.state.openSettings}
+            saved={this.init}
             close={() => {
               this.setState({ openSettings: false });
             }}

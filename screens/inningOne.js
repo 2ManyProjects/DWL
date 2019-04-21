@@ -36,29 +36,17 @@ export default class InningOne extends React.Component {
       dialog: false,
       block: false,
       cardString: null,
-      globalValue: [0, 0, 0]
+      globalValue: [0, 0, 0],
+      gameRule: {}
     };
     // console.log("Inning 1 contructed");
   }
 
   initglobalValue = val => {
-    let total = this.state.totalOvers;
     let start = val;
     let arr = this.state.globalValue;
-    if (total < 20) {
-      total = 15;
-      arr[0] = 90;
-    } else if (total < 25) {
-      total = 20;
-      arr[0] = 120;
-    } else if (total < 30) {
-      total = 25;
-      arr[0] = 150;
-    } else if (total < 55) {
-      total = 50;
-      arr[0] = 200;
-    }
-    arr[1] = total;
+    arr[0] = this.state.gameRule.G;
+    arr[1] = this.state.gameRule.Overs;
     arr[2] = start;
     this.setState({ globalValue: arr });
   };
@@ -76,7 +64,8 @@ export default class InningOne extends React.Component {
               gameID: data.gameID,
               totalOvers: data.totalOvers,
               startingOvers: start,
-              calculationData: data.calculationData
+              calculationData: data.calculationData,
+              gameRule: data.gameRule
             },
             () => {
               this.initglobalValue(start);

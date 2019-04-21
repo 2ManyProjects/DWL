@@ -21,28 +21,48 @@ class Settings extends React.Component {
     this.init();
   }
 
-  init = async () => {
-    let settings = await AsyncStorage.getItem("Settings");
-    const def = [
-      { Overs: 15, G: 90, minOvers: 3, id: 0 },
-      { Overs: 20, G: 120, minOvers: 5, id: 1 },
-      { Overs: 25, G: 150, minOvers: 7, id: 2 },
-      { Overs: 50, G: 200, minOvers: 20, id: 3 }
-    ];
+  componentWillReceiveProps(nextProps) {
+    this.setState(
+      {
+        open: nextProps.open
+      },
+      () => {
+        this.init();
+      }
+    );
+  }
 
-    if (settings !== null) {
-      //Todo Retreival
-    } else {
-      this.setState({ settings: def }, () => {
-        this.generateString();
-      });
+  init = async () => {
+    const self = this;
+    try {
+      let settings = await AsyncStorage.getItem("Settings");
+      const def = [
+        { Overs: 15, G: 90, minOvers: 3, id: 0 },
+        { Overs: 20, G: 120, minOvers: 5, id: 1 },
+        { Overs: 25, G: 150, minOvers: 7, id: 2 },
+        { Overs: 50, G: 200, minOvers: 20, id: 3 }
+      ];
+
+      if (settings !== null) {
+        this.setState({ settings: JSON.parse(settings) }, () => {
+          this.generateString();
+        });
+        //Todo Retreival
+      } else {
+        this.setState({ settings: def }, () => {
+          this.generateString();
+          this.save(false);
+        });
+      }
+    } catch (error) {
+      // Error retrieving data
     }
   };
 
   onChanged = (input, index, int) => {
     const data = this.state.settings;
     let prevdata = data[index];
-    if (/^\d+$/.test(input)) {
+    if (/^\d+$/.test(input) || input === "") {
       switch (int) {
         case 0:
           prevdata = {
@@ -71,7 +91,6 @@ class Settings extends React.Component {
       }
     }
     data[index] = prevdata;
-    console.log("[" + index + "]", data);
     this.setState({ settings: data }, () => {
       this.generateString();
     });
@@ -98,10 +117,38 @@ class Settings extends React.Component {
     });
   };
 
-  save = () => {
+  save = async bool => {
     //TODO: Saveing to AsynStorage
+    await AsyncStorage.setItem("Settings", JSON.stringify(this.state.settings));
+    this.props.saved();
+    if (bool) this.props.close();
+  };
 
-    this.props.close();
+  checkInputs = () => {
+    let complete = false;
+    for (let x = 0; x < this.state.settings.length; x++) {
+      let data = this.state.settings[x];
+      if (isNaN(data.Overs) || isNaN(data.G) || isNaN(data.minOvers)) {
+        complete = false;
+        break;
+      }
+      complete = true;
+    }
+    if (complete) {
+      this.setState({ open: false }, () => {
+        this.save(true);
+      });
+    } else {
+      alert("Please Fill or delete every section before saving");
+    }
+  };
+
+  checkValue = val => {
+    if (isNaN(val)) {
+      return "";
+    } else {
+      return "" + val;
+    }
   };
 
   generateString = () => {
@@ -126,7 +173,7 @@ class Settings extends React.Component {
                 borderWidth: 1
               }}
               onChangeText={input => this.onChanged(input, index, 0)}
-              value={"" + this.state.settings[index].Overs}
+              value={this.checkValue(this.state.settings[index].Overs)}
               maxLength={3}
             />
             <Text>{"\n"} Min Overs</Text>
@@ -140,7 +187,7 @@ class Settings extends React.Component {
               }}
               keyboardType="numeric"
               onChangeText={input => this.onChanged(input, index, 2)}
-              value={"" + this.state.settings[index].minOvers}
+              value={this.checkValue(this.state.settings[index].minOvers)}
               maxLength={3} //setting limit of input
             />
             <Text>{"\n"} G Value</Text>
@@ -155,7 +202,7 @@ class Settings extends React.Component {
               label="G"
               keyboardType="numeric"
               onChangeText={input => this.onChanged(input, index, 1)}
-              value={"" + this.state.settings[index].G}
+              value={this.checkValue(this.state.settings[index].G)}
               maxLength={3} //setting limit of input
             />
           </View>
@@ -171,12 +218,6 @@ class Settings extends React.Component {
     });
     this.setState({ dataString });
   };
-
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      open: nextProps.open
-    });
-  }
 
   render() {
     return (
@@ -195,9 +236,7 @@ class Settings extends React.Component {
         <Dialog.Button
           label="Save"
           onPress={() => {
-            this.setState({ open: false }, () => {
-              this.save();
-            });
+            this.checkInputs();
           }}
         />
         <Dialog.Button
