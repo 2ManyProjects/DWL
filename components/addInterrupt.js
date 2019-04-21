@@ -52,12 +52,18 @@ class Interrupt extends Component {
           break;
         case "oversLost":
           if (value != "0") {
-            this.setState({ [id]: parseInt(value) });
             const newOvers = this.state.totalOvers - parseInt(val);
-            if (this.props.gameRule.minOvers > newOvers) {
+            if (this.props.gameRule.minOvers > newOvers && newOvers > 0) {
               alert(
                 "The total playable overs have dropped below the minimum for a game"
               );
+              this.setState({ [id]: parseInt(value) });
+            } else if (newOvers <= 0) {
+              alert(
+                "The total playable overs have dropped below 0, please re-input a valid amount"
+              );
+            } else {
+              this.setState({ [id]: parseInt(value) });
             }
           } else this.setState({ [id]: 0 });
           break;
@@ -106,8 +112,7 @@ class Interrupt extends Component {
     let LostBalls = 0;
     if (this.state.oversBowledBall > 0)
       BowledBalls = this.state.oversBowledBall / 10;
-    if (this.state.oversLostBall > 0)
-      BowledBalls = this.state.oversLostBall / 10;
+    if (this.state.oversLostBall > 0) LostBalls = this.state.oversLostBall / 10;
     let data = {
       score: this.state.score,
       wickets: this.state.wickets,

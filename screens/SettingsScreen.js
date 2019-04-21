@@ -1,6 +1,7 @@
 import React from "react";
 import { ScrollView, View, Text, Button, AsyncStorage } from "react-native";
 import { ExpoConfigView } from "@expo/samples";
+import { Updates } from "expo";
 
 export default class SettingsScreen extends React.Component {
   static navigationOptions = {
@@ -35,14 +36,7 @@ export default class SettingsScreen extends React.Component {
       // Error saving data
     }
   };
-  leave = () => {
-    this.props.navigation.navigate("App");
-  };
-
   render() {
-    const { navigate } = this.props.navigation;
-    /* Go ahead and delete ExpoConfigView and replace it with your
-     * content, we just wanted to give you a quick view of your config */
     return (
       <View
         style={{
@@ -56,10 +50,7 @@ export default class SettingsScreen extends React.Component {
         <Button onPress={() => this.saveGame()} title="Save Current Game" />
         <Text>{"\n"}</Text>
         <Text>{"\n"}</Text>
-        <Button
-          onPress={() => navigate("HomePage")}
-          title="Exit to Main Menu"
-        />
+        <Button onPress={() => Updates.reload()} title="Exit to Main Menu" />
         {/* <ExpoConfigView /> */}
       </View>
     );

@@ -7,7 +7,8 @@ import {
   Button,
   Platform,
   ScrollView,
-  AsyncStorage
+  AsyncStorage,
+  Alert
 } from "react-native";
 import { FloatingAction } from "react-native-floating-action";
 import Interrupt from "../components/addInterrupt";
@@ -245,15 +246,42 @@ export default class InningOne extends React.Component {
 
   removeR1 = id => {
     let inter = this.state.interupts;
+    const self = this;
     for (let i = 0; i < inter.length; i++) {
       if (inter[i].id === id) {
-        inter.splice(i, 1);
+        if (i < inter.length - 1 && i !== 0) {
+          Alert.alert(
+            "Interrupt Message",
+            "This action will also clear all Interrupts after this one",
+            [
+              {
+                text: "OK",
+                onPress: i => {
+                  let inter = self.state.interupts;
+                  console.log("I", i, " Inter ", inter);
+                  inter.splice(i, inter.length - 1);
+                  self.setState({ interupts: inter }, () => {
+                    self.recalculate();
+                  });
+                }
+              },
+              {
+                text: "Cancel",
+                onPress: () => {},
+                style: "cancel"
+              }
+            ],
+            { cancelable: false }
+          );
+        } else {
+          inter.splice(i, 1);
+          this.setState({ interupts: inter }, () => {
+            this.recalculate();
+          });
+        }
         break;
       }
     }
-    this.setState({ interupts: inter }, () => {
-      this.recalculate();
-    });
   };
 
   backupData = async () => {
@@ -332,7 +360,7 @@ export default class InningOne extends React.Component {
                 alignItems: "center"
               }}
             >
-              <Button
+              {/* <Button
                 onPress={() => {
                   if (this.state.block) {
                     alert(
@@ -345,7 +373,7 @@ export default class InningOne extends React.Component {
                 title="Edit"
                 color="#FF8800"
               />
-              <Text>{"     "}</Text>
+              <Text>{"     "}</Text> */}
               <Button
                 onPress={() => {
                   if (this.state.block) {

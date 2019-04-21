@@ -292,39 +292,6 @@ export default class HomeScreen extends React.Component {
             maxLength={10}
           />
           <Text>{"\n"}</Text>
-          <Picker
-            style={{ height: 50, width: 200 }}
-            selectedValue={this.state.selectedRule}
-            onValueChange={(itemValue, itemIndex) =>
-              this.setState(
-                {
-                  selectedRule: itemValue,
-                  totalOvers: itemValue.Overs,
-                  startingOvers: itemValue.Overs
-                },
-                () => {
-                  console.log("SELECTED ", this.state.selectedRule);
-                }
-              )
-            }
-            mode="dropdown"
-          >
-            {this.state.gameRule.map((game, index) => (
-              <Picker.Item
-                key={index}
-                label={
-                  "Overs: " +
-                  game.Overs +
-                  ", Min: " +
-                  game.minOvers +
-                  ", G: " +
-                  game.G
-                }
-                value={game}
-              />
-            ))}
-          </Picker>
-          <Text>{"\n"}</Text>
           <TextInput
             style={{
               height: 40,
@@ -388,6 +355,39 @@ export default class HomeScreen extends React.Component {
             }}
           />
         </View>
+        <Text>{"\n"}</Text>
+        <Picker
+          style={{ height: 50, width: 200 }}
+          selectedValue={this.state.selectedRule}
+          onValueChange={(itemValue, itemIndex) =>
+            this.setState(
+              {
+                selectedRule: itemValue,
+                totalOvers: itemValue.Overs,
+                startingOvers: itemValue.Overs
+              },
+              () => {
+                console.log("SELECTED ", this.state.selectedRule);
+              }
+            )
+          }
+          mode="dropdown"
+        >
+          {this.state.gameRule.map(game => (
+            <Picker.Item
+              key={game.id}
+              label={
+                "Overs: " +
+                game.Overs +
+                ", Min: " +
+                game.minOvers +
+                ", G: " +
+                game.G
+              }
+              value={game}
+            />
+          ))}
+        </Picker>
 
         <Dialog.Container visible={this.state.open}>
           <Dialog.Title>Load or Delete</Dialog.Title>

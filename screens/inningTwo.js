@@ -7,7 +7,8 @@ import {
   Button,
   Platform,
   ScrollView,
-  AsyncStorage
+  AsyncStorage,
+  Alert
 } from "react-native";
 import Dialog from "react-native-dialog";
 import { FloatingAction } from "react-native-floating-action";
@@ -296,16 +297,42 @@ export default class InningTwo extends React.Component {
 
   removeR2 = id => {
     let inter = this.state.interupts;
+    const self = this;
     for (let i = 0; i < inter.length; i++) {
       if (inter[i].id === id) {
-        inter.splice(i, 1);
+        if (i < inter.length - 1 && i !== 0) {
+          Alert.alert(
+            "Interrupt Message",
+            "This action will also clear all Interrupts after this one",
+            [
+              {
+                text: "OK",
+                onPress: i => {
+                  let inter = self.state.interupts;
+                  console.log("I", i, " Inter ", inter);
+                  inter.splice(i, inter.length - 1);
+                  self.setState({ interupts: inter }, () => {
+                    self.recalculate();
+                  });
+                }
+              },
+              {
+                text: "Cancel",
+                onPress: () => {},
+                style: "cancel"
+              }
+            ],
+            { cancelable: false }
+          );
+        } else {
+          inter.splice(i, 1);
+          this.setState({ interupts: inter }, () => {
+            this.recalculate();
+          });
+        }
         break;
       }
     }
-
-    this.setState({ interupts: inter }, () => {
-      this.recalculate();
-    });
   };
 
   Submit = val => {
@@ -403,14 +430,14 @@ export default class InningTwo extends React.Component {
                 alignItems: "center"
               }}
             >
-              <Button
+              {/* <Button
                 onPress={() => {
                   this.openInterrupt(true, interupt);
                 }}
                 title="Edit"
                 color="#FF8800"
               />
-              <Text>{"     "}</Text>
+              <Text>{"     "}</Text> */}
               <Button
                 onPress={() => {
                   this.removeR2(interupt.id);
