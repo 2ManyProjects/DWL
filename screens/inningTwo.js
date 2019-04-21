@@ -448,6 +448,7 @@ export default class InningTwo extends React.Component {
           open={this.state.dialog}
           missing={this.state.missing}
           globals={this.state.globalValue}
+          gameRule={this.state.gameRule}
         />
 
         <View style={[{ paddingTop: 15 }]}>

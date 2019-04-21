@@ -51,8 +51,15 @@ class Interrupt extends Component {
           } else alert("No more thank 6 balls in an over");
           break;
         case "oversLost":
-          if (value != "0") this.setState({ [id]: parseInt(value) });
-          else this.setState({ [id]: 0 });
+          if (value != "0") {
+            this.setState({ [id]: parseInt(value) });
+            const newOvers = this.state.totalOvers - parseInt(val);
+            if (this.props.gameRule.minOvers > newOvers) {
+              alert(
+                "The total playable overs have dropped below the minimum for a game"
+              );
+            }
+          } else this.setState({ [id]: 0 });
           break;
         case "oversLostBall":
           if (value <= 6) this.setState({ [id]: parseInt(value) });

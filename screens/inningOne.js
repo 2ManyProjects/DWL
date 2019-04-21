@@ -387,6 +387,7 @@ export default class InningOne extends React.Component {
           open={this.state.dialog}
           missing={this.state.missing}
           globals={this.state.globalValue}
+          gameRule={this.state.gameRule}
         />
         <View
           style={[{ width: "30%", alignSelf: "center", paddingBottom: 15 }]}

@@ -64,7 +64,9 @@ export default class HomeScreen extends React.Component {
         this.setState(
           {
             gameRule: JSON.parse(settings),
-            selectedRule: JSON.parse(settings)[0]
+            selectedRule: JSON.parse(settings)[0],
+            totalOvers: JSON.parse(settings)[0].Overs,
+            startingOvers: JSON.parse(settings)[0].Overs
           },
           () => {}
         );
@@ -72,7 +74,9 @@ export default class HomeScreen extends React.Component {
         this.setState(
           {
             gameRule: def,
-            selectedRule: { Overs: 15, G: 90, minOvers: 3, id: 0 }
+            selectedRule: { Overs: 15, G: 90, minOvers: 3, id: 0 },
+            totalOvers: 15,
+            startingOvers: 15
           },
           () => {}
         );
@@ -292,16 +296,30 @@ export default class HomeScreen extends React.Component {
             style={{ height: 50, width: 200 }}
             selectedValue={this.state.selectedRule}
             onValueChange={(itemValue, itemIndex) =>
-              this.setState({ selectedRule: itemValue }, () => {
-                console.log("SELECTED ", this.state.selectedRule);
-              })
+              this.setState(
+                {
+                  selectedRule: itemValue,
+                  totalOvers: itemValue.Overs,
+                  startingOvers: itemValue.Overs
+                },
+                () => {
+                  console.log("SELECTED ", this.state.selectedRule);
+                }
+              )
             }
             mode="dropdown"
           >
             {this.state.gameRule.map((game, index) => (
               <Picker.Item
                 key={index}
-                label={"Overs: " + game.Overs + ", G: " + game.G}
+                label={
+                  "Overs: " +
+                  game.Overs +
+                  ", Min: " +
+                  game.minOvers +
+                  ", G: " +
+                  game.G
+                }
                 value={game}
               />
             ))}
