@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { SafeAreaView, View, StyleSheet, Platform, Text } from "react-native";
+import { CheckBox } from "react-native-elements";
 import Dialog from "react-native-dialog";
 import { subtractOvers } from "./helpers";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -17,7 +18,8 @@ class Interrupt extends Component {
       oversLostBall: 0,
       oversBowled: 0,
       oversLost: 0,
-      oversLeft: 0
+      oversLeft: 0,
+      endInning: false
     };
   }
 
@@ -108,27 +110,42 @@ class Interrupt extends Component {
   componentWillUpdate() {}
 
   handleCreate = () => {
-    let BowledBalls = 0;
-    let LostBalls = 0;
-    if (this.state.oversBowledBall > 0)
-      BowledBalls = this.state.oversBowledBall / 10;
-    if (this.state.oversLostBall > 0) LostBalls = this.state.oversLostBall / 10;
-    let data = {
-      score: this.state.score,
-      wickets: this.state.wickets,
-      oversBowled: this.state.oversBowled + BowledBalls,
-      oversLost: this.state.oversLost + LostBalls,
-      oversLeft: subtractOvers(this.state.totalOvers, this.state.oversBowled)
-    };
-    if (this.state.edit) {
-      const editInterupt = this.state.editInterupt;
-      data["id"] = editInterupt.id;
-      data["time"] = editInterupt.time;
-      this.handleCancel();
-      this.props.edit(editInterupt, data);
+    if (this.state.endInning && this.state.score === 0) {
+      alert("Please enter the final score for Inning 1 before continuing");
     } else {
-      this.handleCancel();
-      this.props.create(data);
+      let BowledBalls = 0;
+      let LostBalls = 0;
+      if (this.state.oversBowledBall > 0)
+        BowledBalls = this.state.oversBowledBall / 10;
+      if (this.state.oversLostBall > 0)
+        LostBalls = this.state.oversLostBall / 10;
+      let data = {
+        score: this.state.score,
+        wickets: this.state.wickets,
+        oversBowled: this.state.oversBowled + BowledBalls,
+        oversLost: this.state.oversLost + LostBalls,
+        oversLeft: subtractOvers(this.state.totalOvers, this.state.oversBowled)
+      };
+      if (this.state.edit) {
+        const editInterupt = this.state.editInterupt;
+        data["id"] = editInterupt.id;
+        data["time"] = editInterupt.time;
+        this.handleCancel();
+        this.props.edit(editInterupt, data);
+      } else {
+        const time = new Date().toLocaleString();
+        this.handleCancel();
+        data["time"] = time;
+        this.props.create(data);
+        if (this.state.endInning) {
+          this.props.disable({
+            disable: true,
+            time: time,
+            score: this.state.score,
+            oversBowled: this.state.oversBowled + BowledBalls
+          });
+        }
+      }
     }
   };
   getTitle = () => {
@@ -146,11 +163,13 @@ class Interrupt extends Component {
         oversBowledBall: 0,
         oversLostBall: 0,
         oversLost: 0,
-        oversLeft: 0
+        oversLeft: 0,
+        endInning: false
       },
       this.props.closeInterrupt()
     );
   };
+
   render() {
     return (
       <SafeAreaView style={styles.container}>
@@ -205,22 +224,39 @@ class Interrupt extends Component {
                 keyboardType="decimal-pad"
               />
             </View>
+            {this.props.inning === 1 &&
+              this.state.oversBowled >= this.props.gameRule.minOvers && (
+                <CheckBox
+                  center
+                  title="End Inning"
+                  checked={this.state.endInning}
+                  onPress={() =>
+                    this.setState({
+                      endInning: !this.state.endInning,
+                      oversLost: 0
+                    })
+                  }
+                />
+              )}
             <View
               style={{
                 flex: 1,
                 flexDirection: "row"
               }}
             >
-              <Dialog.Input
-                label="Over Lost Current Inning"
-                onChange={event => {
-                  this.onChange(event, "oversLost");
-                }}
-                value={this.getValue("oversLost")}
-                underlineColorAndroid="#000"
-                style={dependant.OS}
-                keyboardType="decimal-pad"
-              />
+              {!this.state.endInning && (
+                <Dialog.Input
+                  label="Over Lost Current Inning"
+                  onChange={event => {
+                    this.onChange(event, "oversLost");
+                  }}
+                  value={this.getValue("oversLost")}
+                  underlineColorAndroid="#000"
+                  style={dependant.OS}
+                  keyboardType="decimal-pad"
+                  disabled={this.state.endInning}
+                />
+              )}
               {/* <Dialog.Input
                 label="Balls Bowled"
                 onChange={event => {

@@ -153,7 +153,8 @@ export default class HomeScreen extends React.Component {
         val === "GlobalData" ||
         val === "Inning2" ||
         val === "Inning1" ||
-        val === "tempGame"
+        val === "tempGame" ||
+        val === "Settings"
       );
     });
     this.setState({ games: titles, open: true }, () => {

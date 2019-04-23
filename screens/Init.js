@@ -31,10 +31,23 @@ class Init extends Component {
   Submit = () => {
     const temp = this.state.score;
 
-    if (temp > 0) {
-      this.setState({ score: 0 }, this.props.closeInit(temp));
+    if (!this.props.disabled.disable) {
+      if (temp > 0) {
+        this.setState({ score: 0 }, this.props.closeInit(temp, true));
+      } else {
+        alert("Score Cannot be less than 1");
+      }
     } else {
-      alert("Score Cannot be less than 1");
+      if (
+        temp >= this.props.gameRule.minOvers &&
+        temp <= this.props.disabled.oversBowled
+      ) {
+        this.setState({ score: 0 }, this.props.closeInit(temp, false));
+      } else {
+        alert(
+          "Overs Cannot be less than the Games minimum Overs or greater than the previous Innings Overs Bowled"
+        );
+      }
     }
   };
 
@@ -50,7 +63,9 @@ class Init extends Component {
           <Dialog.Title>Inning 2 Setup</Dialog.Title>
           <Dialog.Description> </Dialog.Description>
           <Dialog.Input
-            label="Inning 1 Score"
+            label={
+              this.props.disabled.disable ? "Inning 1 Overs" : "Inning 1 Score"
+            }
             onChange={event => {
               this.onChange(event, "score");
             }}

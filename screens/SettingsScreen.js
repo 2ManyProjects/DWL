@@ -24,13 +24,11 @@ export default class SettingsScreen extends React.Component {
       let allFiles = await AsyncStorage.getAllKeys();
       if (allFiles.indexOf(key) === -1) {
         await AsyncStorage.setItem(key, JSON.stringify(value));
-        alert("Game Saved");
-        console.log("Game Saved");
       } else {
         await AsyncStorage.mergeItem(key, JSON.stringify(value));
-        alert("Game Saved");
-        console.log("Game Saved");
       }
+      alert("Game Saved");
+      console.log("Game Saved");
     } catch (error) {
       console.log(error);
       // Error saving data

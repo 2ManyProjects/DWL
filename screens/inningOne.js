@@ -38,7 +38,8 @@ export default class InningOne extends React.Component {
       block: false,
       cardString: null,
       globalValue: [0, 0, 0],
-      gameRule: {}
+      gameRule: {},
+      disabled: { disable: false, time: null, score: 0, oversBowled: 0 }
     };
     // console.log("Inning 1 contructed");
   }
@@ -109,7 +110,9 @@ export default class InningOne extends React.Component {
         startingOvers: val.startingOvers,
         interupts: val.interupts,
         dialog: val.dialog,
-        globalValue: val.globalValue
+        globalValue: val.globalValue,
+        gameRule: val.gameRule,
+        disabled: val.disabled
       },
       () => {
         this.recalculate();
@@ -174,7 +177,6 @@ export default class InningOne extends React.Component {
 
   create = data => {
     let tempData = data;
-    tempData["time"] = new Date().toLocaleString();
     let interruptArray = this.state.interupts;
     tempData["id"] = generateGuid();
     interruptArray.push(tempData);
@@ -230,7 +232,9 @@ export default class InningOne extends React.Component {
     this.setState({ R1: R1 }, async () => {
       const data = {
         missing: this.state.missing,
-        R1: this.state.R1
+        R1: this.state.R1,
+        gameRule: this.state.gameRule,
+        disabled: this.state.disabled
       };
 
       this.generateCards();
@@ -249,7 +253,7 @@ export default class InningOne extends React.Component {
     const self = this;
     for (let i = 0; i < inter.length; i++) {
       if (inter[i].id === id) {
-        if (i < inter.length - 1 && i !== 0) {
+        if (i < inter.length - 1 && inter.length !== 1) {
           Alert.alert(
             "Interrupt Message",
             "This action will also clear all Interrupts after this one",
@@ -259,6 +263,24 @@ export default class InningOne extends React.Component {
                 onPress: i => {
                   let inter = self.state.interupts;
                   console.log("I", i, " Inter ", inter);
+                  for (let x = i; x < inter.length; x++) {
+                    console.log(
+                      "Inter time",
+                      inter[x].time,
+                      " Compare",
+                      self.state.disabled.time
+                    );
+                    if (inter[x].time === self.state.disabled.time) {
+                      self.setState({
+                        disabled: {
+                          disable: false,
+                          time: null,
+                          score: 0,
+                          oversBowled: 0
+                        }
+                      });
+                    }
+                  }
                   inter.splice(i, inter.length - 1);
                   self.setState({ interupts: inter }, () => {
                     self.recalculate();
@@ -274,6 +296,12 @@ export default class InningOne extends React.Component {
             { cancelable: false }
           );
         } else {
+          if (inter[i].time === this.state.disabled.time) {
+            this.setState({
+              disabled: { disable: false, time: null, score: 0, oversBowled: 0 }
+            });
+          }
+
           inter.splice(i, 1);
           this.setState({ interupts: inter }, () => {
             this.recalculate();
@@ -297,7 +325,9 @@ export default class InningOne extends React.Component {
       startingOvers: this.state.startingOvers,
       interupts: this.state.interupts,
       dialog: this.state.dialog,
-      globalValue: this.state.globalValue
+      globalValue: this.state.globalValue,
+      gameRule: this.state.gameRule,
+      disabled: this.state.disabled
     };
 
     console.log("Backingup Inning 1");
@@ -310,6 +340,10 @@ export default class InningOne extends React.Component {
       console.log(error);
       // Error saving data
     }
+  };
+
+  disable = data => {
+    this.setState({ disabled: data });
   };
 
   generateCards = () => {
@@ -416,6 +450,7 @@ export default class InningOne extends React.Component {
           missing={this.state.missing}
           globals={this.state.globalValue}
           gameRule={this.state.gameRule}
+          disable={this.disable}
         />
         <View
           style={[{ width: "30%", alignSelf: "center", paddingBottom: 15 }]}
@@ -423,6 +458,7 @@ export default class InningOne extends React.Component {
           <Button
             title="Add Interrupt"
             color="#FF8800"
+            disabled={this.state.disabled.disable}
             onPress={() => {
               this.openInterrupt(false);
             }}

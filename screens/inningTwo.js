@@ -46,8 +46,10 @@ export default class InningTwo extends React.Component {
       dialog: false,
       cardString: null,
       globalValue: [0, 0, 0],
+      disabled: { disable: false, time: null, score: 0, oversBowled: 0 },
       gameRule: {}
     };
+    this.setup = this.setup.bind(this);
     // console.log("Inning 2 contructed");
   }
 
@@ -91,13 +93,12 @@ export default class InningTwo extends React.Component {
     }
   };
   async componentDidMount() {
-    // console.log("Inning 2 Mounted");
     const val = JSON.parse(await AsyncStorage.getItem("tempGame"));
     if (val.Inning2.gameID) {
       await this._retrieveData(true);
       await this.loadGame(val.Inning2);
     } else {
-      this._retrieveData(false);
+      await this._retrieveData(false);
     }
     this.props.navigation.addListener("willFocus", this.load);
     await this.load();
@@ -125,7 +126,9 @@ export default class InningTwo extends React.Component {
         startingOvers: val.startingOvers,
         interupts: val.interupts,
         dialog: val.dialog,
-        globalValue: val.globalValue
+        globalValue: val.globalValue,
+        gameRule: val.gameRule,
+        disabled: val.disabled
       },
       () => {
         this.recalculate();
@@ -155,7 +158,8 @@ export default class InningTwo extends React.Component {
         startingOvers: null,
         interupts: [],
         dialog: false,
-        cardString: null
+        cardString: null,
+        disabled: { disable: false, time: null, score: 0, oversBowled: 0 }
       });
     }
     try {
@@ -163,11 +167,42 @@ export default class InningTwo extends React.Component {
       if (value !== null) {
         const data = JSON.parse(value);
         console.log("R1 DATA: ", data.R1);
-        self.setState({
-          missing: data.missing,
-          initialMissing: data.missing,
-          R1: data.R1
-        });
+        if (data.disabled === undefined) {
+          data.disabled = {
+            disable: false,
+            time: null,
+            score: 0,
+            oversBowled: 0
+          };
+        }
+        self.setState(
+          {
+            missing: data.missing,
+            initialMissing: data.missing,
+            R1: data.R1,
+            disabled: data.disabled
+          },
+          () => {
+            if (data.disabled.disable) {
+              self.setState({ score: data.disabled.score }, () => {
+                if (
+                  Math.floor(data.disabled.oversBowled) ===
+                  self.state.gameRule.minOvers
+                ) {
+                  self.setState(
+                    {
+                      initialMissing:
+                        self.state.gameRule.Overs - self.state.gameRule.minOvers
+                    },
+                    () => {
+                      self.recalculate();
+                    }
+                  );
+                }
+              });
+            }
+          }
+        );
       }
     } catch (error) {
       // Error retrieving data
@@ -335,17 +370,40 @@ export default class InningTwo extends React.Component {
     }
   };
 
-  Submit = val => {
+  Submit = (val, def) => {
     try {
       AsyncStorage.mergeItem("Inning2", JSON.stringify({ size: 1 }));
     } catch (error) {
       console.log(error);
       // Error saving data
     }
-    this.setState({ open: false, score: val }, () => {
-      this.calculate();
-    });
+    if (def) {
+      this.setState({ open: false, score: val }, () => {
+        this.calculate();
+      });
+    } else {
+      this.setState(
+        {
+          open: false,
+          initialMissing: this.state.gameRule.Overs - val
+        },
+        () => {
+          this.calculate();
+        }
+      );
+    }
   };
+
+  setup() {
+    if (
+      Math.floor(this.state.disabled.oversBowled) ===
+      this.state.gameRule.minOvers
+    ) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 
   backupData = async () => {
     const data = {
@@ -367,7 +425,9 @@ export default class InningTwo extends React.Component {
       startingOvers: this.state.startingOvers,
       interupts: this.state.interupts,
       dialog: this.state.dialog,
-      globalValue: this.state.globalValue
+      globalValue: this.state.globalValue,
+      disabled: this.state.disabled,
+      gameRule: this.state.gameRule
     };
 
     // console.log("Backingup Inning 2");
@@ -530,7 +590,14 @@ export default class InningTwo extends React.Component {
                 );
               }}
             />
-            <Init open={this.state.open} closeInit={this.Submit} />
+            {this.setup() && (
+              <Init
+                open={this.state.open}
+                closeInit={this.Submit}
+                disabled={this.state.disabled}
+                gameRule={this.state.gameRule}
+              />
+            )}
           </View>
         </View>
       </SafeAreaView>

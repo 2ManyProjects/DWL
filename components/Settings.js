@@ -17,8 +17,13 @@ import Dialog from "react-native-dialog";
 class Settings extends React.Component {
   constructor(props) {
     super(props);
+    this.mounted = true;
     this.state = { open: false, dataString: "", settings: [] };
     this.init();
+  }
+
+  componentDidMount() {
+    this.mounted = true;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -30,6 +35,9 @@ class Settings extends React.Component {
         this.init();
       }
     );
+  }
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   init = async () => {
@@ -44,15 +52,19 @@ class Settings extends React.Component {
       ];
 
       if (settings !== null) {
-        this.setState({ settings: JSON.parse(settings) }, () => {
-          this.generateString();
-        });
+        if (this.mounted) {
+          this.setState({ settings: JSON.parse(settings) }, () => {
+            this.generateString();
+          });
+        }
         //Todo Retreival
       } else {
-        this.setState({ settings: def }, () => {
-          this.generateString();
-          this.save(false);
-        });
+        if (this.mounted) {
+          this.setState({ settings: def }, () => {
+            this.generateString();
+            this.save(false);
+          });
+        }
       }
     } catch (error) {
       // Error retrieving data
