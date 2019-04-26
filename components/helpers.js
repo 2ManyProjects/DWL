@@ -11,9 +11,10 @@ export function subtractOvers(x, y) {
     result = decx - decy;
   } else {
     temp -= 1;
-    result = Math.floor((0.6 - (decy - decx)) * 10) / 10;
+    result = Math.floor((0.7 - (decy - decx)) * 10) / 10;
   }
   result += temp;
+  // console.log("X", x, " Y", y, result);
   return result;
 }
 

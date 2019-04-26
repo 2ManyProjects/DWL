@@ -204,16 +204,27 @@ export default class InningOne extends React.Component {
       let lastaddedOversLost = lastadded.oversLost;
       let lastaddedOversLeft = lastadded.oversLeft;
       let temp = Math.floor(
-        (lastaddedOversLeft - lastaddedOversLost) /* / 2*/ * 10
+        subtractOvers(lastaddedOversLeft, lastaddedOversLost) /* / 2*/ * 10
+      );
+      console.log(
+        "Temp",
+        temp,
+        "OL",
+        lastaddedOversLeft,
+        "OLost",
+        lastaddedOversLost
       );
       let wickets = lastadded.wickets;
-      acc =
-        acc +
-        (data[Math.floor(lastaddedOversLeft) * 10][wickets] -
-          data[temp][wickets]);
-      ac.push(
-        data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
-      );
+      let initial = 0;
+      let next = 0;
+      if (Math.floor(lastaddedOversLeft * 10) !== 0)
+        initial = data[Math.floor(lastaddedOversLeft * 10)][wickets];
+      else initial = 0.0;
+      if (temp !== 0) next = data[temp][wickets];
+      else next = 0.0;
+      acc = acc + (initial - next);
+      ac.push(initial - next);
+      console.log("ACC", acc);
       missingOvers += lastaddedOversLost /* / 2*/;
     }
     this.setState(

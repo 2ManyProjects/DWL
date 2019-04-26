@@ -124,7 +124,10 @@ class Interrupt extends Component {
         wickets: this.state.wickets,
         oversBowled: this.state.oversBowled + BowledBalls,
         oversLost: this.state.oversLost + LostBalls,
-        oversLeft: subtractOvers(this.state.totalOvers, this.state.oversBowled)
+        oversLeft: subtractOvers(
+          this.state.totalOvers,
+          this.state.oversBowled + BowledBalls
+        )
       };
       if (this.state.edit) {
         const editInterupt = this.state.editInterupt;
@@ -136,7 +139,6 @@ class Interrupt extends Component {
         const time = new Date().toLocaleString();
         this.handleCancel();
         data["time"] = time;
-        this.props.create(data);
         if (this.state.endInning) {
           this.props.disable({
             disable: true,
@@ -144,6 +146,14 @@ class Interrupt extends Component {
             score: this.state.score,
             oversBowled: this.state.oversBowled + BowledBalls
           });
+          data.oversLost = data.oversLeft;
+
+          console.log("Interrupt Data", data);
+          // data.oversLeft = 0;
+          this.props.create(data);
+        } else {
+          console.log("Interrupt Data", data);
+          this.props.create(data);
         }
       }
     }
@@ -272,7 +282,7 @@ class Interrupt extends Component {
               Overs Left:{" "}
               {subtractOvers(
                 this.state.totalOvers,
-                this.state.oversBowled
+                this.state.oversBowled + this.state.oversBowledBall / 10
               ).toString()}
             </Text>
             <Dialog.Button label="Submit" onPress={this.handleCreate} />

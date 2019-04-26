@@ -47,7 +47,7 @@ export default class InningTwo extends React.Component {
       cardString: null,
       globalValue: [0, 0, 0],
       disabled: { disable: false, time: null, score: 0, oversBowled: 0 },
-      gameRule: {}
+      gameRule: { Overs: 15, G: 90, minOvers: 3, id: 0 }
     };
     this.setup = this.setup.bind(this);
     // console.log("Inning 2 contructed");
@@ -174,11 +174,17 @@ export default class InningTwo extends React.Component {
             score: 0,
             oversBowled: 0
           };
+        } else {
+          console.log("R1 Disabled: ", data.disabled);
         }
         self.setState(
           {
-            missing: data.missing,
-            initialMissing: data.missing,
+            missing:
+              self.state.missing !== 0 ? self.state.missing : data.missing,
+            initialMissing:
+              self.state.initialMissing !== 0
+                ? self.state.initialMissing
+                : data.missing,
             R1: data.R1,
             disabled: data.disabled
           },
@@ -276,22 +282,29 @@ export default class InningTwo extends React.Component {
       let lastadded = this.state.interupts[x];
       let lastaddedOversLost = lastadded.oversLost;
       let lastaddedOversLeft = lastadded.oversLeft;
-      let temp = Math.floor((lastaddedOversLeft - lastaddedOversLost) * 10);
+      let temp = Math.floor(
+        subtractOvers(lastaddedOversLeft, lastaddedOversLost) * 10
+      );
       let wickets = lastadded.wickets;
-      acc =
-        acc +
-        (data[Math.floor(lastaddedOversLeft) * 10][wickets] -
-          data[temp][wickets]);
-      ac.push(
-        data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
-      );
+      let initial = 0;
+      let next = 0;
+      // console.log("wickets", wickets, "temp ", temp);
+      if (Math.floor(lastaddedOversLeft * 10) !== 0)
+        initial = data[Math.floor(lastaddedOversLeft * 10)][wickets];
+      else initial = 0.0;
+      if (temp !== 0) next = data[temp][wickets];
+      else next = 0.0;
+      acc = acc + (initial - next);
+      ac.push(initial - next);
+      // acc =
+      //   acc +
+      //   (data[Math.floor(lastaddedOversLeft) * 10][wickets] -
+      //     data[temp][wickets]);
+      // ac.push(
+      //   data[Math.floor(lastaddedOversLeft) * 10][wickets] - data[temp][wickets]
+      // );
       missingOvers += lastaddedOversLost;
-      console.log(
-        "Calculation",
-        data[Math.floor(lastaddedOversLeft) * 10][wickets] +
-          " - " +
-          data[temp][wickets]
-      );
+      console.log("Calculation", initial + " - " + next);
       console.log("Acc:", acc.toFixed(1));
     }
     this.setState(
@@ -303,7 +316,8 @@ export default class InningTwo extends React.Component {
   };
 
   calculate = () => {
-    let R2 =
+    let R2 = 0.0;
+    R2 =
       this.state.calculationData[
         (this.state.globalValue[2] - this.state.initialMissing) * 10
       ][0] - parseFloat(this.state.acc);
@@ -345,8 +359,12 @@ export default class InningTwo extends React.Component {
                 onPress: i => {
                   let inter = self.state.interupts;
                   console.log("I", i, " Inter ", inter);
+                  let missing = self.state.missing;
+                  for (let x = i; x < i.length; x++) {
+                    missing -= inter[x].oversLost;
+                  }
                   inter.splice(i, inter.length - 1);
-                  self.setState({ interupts: inter }, () => {
+                  self.setState({ interupts: inter, missing: missing }, () => {
                     self.recalculate();
                   });
                 }
@@ -360,8 +378,9 @@ export default class InningTwo extends React.Component {
             { cancelable: false }
           );
         } else {
+          const missing = this.state.missing - inter[i].oversLost;
           inter.splice(i, 1);
-          this.setState({ interupts: inter }, () => {
+          this.setState({ interupts: inter, missing: missing }, () => {
             this.recalculate();
           });
         }
@@ -382,10 +401,14 @@ export default class InningTwo extends React.Component {
         this.calculate();
       });
     } else {
+      // let tempArray = this.state.globalValue;
+      // tempArray[2] = this.state.gameRule.Overs;
       this.setState(
         {
           open: false,
-          initialMissing: this.state.gameRule.Overs - val
+          missing: this.state.gameRule.Overs - parseInt(val),
+          initialMissing: this.state.gameRule.Overs - parseInt(val)
+          // globalValue: tempArray
         },
         () => {
           this.calculate();
@@ -558,6 +581,16 @@ export default class InningTwo extends React.Component {
             />
           </View>
           <Text>Target: {this.state.targetScore.toString()}</Text>
+          <Text>R1: {this.state.R1.toString()}</Text>
+          <Text>R2: {this.state.R2.toString()}</Text>
+          <Text>Acc: {this.state.acc.toString()}</Text>
+          <Text>Initial Missing: {this.state.initialMissing.toString()}</Text>
+          <Text>Total Missing: {this.state.missing.toString()}</Text>
+          <Text>G: {this.state.globalValue[0].toString()}</Text>
+          <Text>Starting Overs: {this.state.globalValue[2].toString()}</Text>
+          {this.state.gameRule !== undefined && (
+            <Text>Total Overs: {this.state.gameRule.Overs.toString()}</Text>
+          )}
           <View style={[{ width: "30%", margin: 10 }]}>
             <Button
               title="Reset"
