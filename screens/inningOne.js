@@ -33,7 +33,7 @@ export default class InningOne extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      tableHead: ["Score", "Wickets", "O/Bowled", "O/Lost", "Info", "Del"],
+      tableHead: ["Score", "Wkts", "Ovs/Bwld", "Ovs/Lost", "Info", "Del"],
       tableData: [],
       edit: false,
       editInterupt: {},
@@ -598,7 +598,7 @@ export default class InningOne extends React.Component {
             StartedAs: {this.state.globalValue[2].toString()}
           </Text>
         </View>
-        <View
+        {/* <View
           style={{
             justifyContent: "space-evenly",
             flexDirection: "row",
@@ -623,7 +623,7 @@ export default class InningOne extends React.Component {
             Dlt
           </Text>
         </View>
-        <ScrollView>{this.state.cardString}</ScrollView>
+        <ScrollView>{this.state.cardString}</ScrollView> */}
         <Table borderStyle={{ borderWidth: 2, borderColor: "#c8e1ff" }}>
           <Row
             data={this.state.tableHead}

@@ -8,6 +8,7 @@ import {
   Button,
   Platform,
   ScrollView,
+  AlertIOS,
   AsyncStorage,
   TouchableOpacity,
   Alert
@@ -35,8 +36,18 @@ export default class InningTwo extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      tableHead: ["Score", "Wickets", "O/Bowled", "O/Lost", "Info", "Del"],
+      tableHead: [
+        "Score",
+        "Wkts",
+        "Ovs/Bwld",
+        "Ovs/Lost",
+        "Curr/Tgt",
+        "Info",
+        "Del"
+      ],
+      initialTarget: 0,
       tableData: [],
+      targetArray: [],
       edit: false,
       editInterupt: {},
       score: -5,
@@ -57,7 +68,6 @@ export default class InningTwo extends React.Component {
       calculationData: {},
       interupts: [],
       dialog: false,
-      cardString: null,
       globalValue: [0, 0, 0],
       disabled: { disable: false, time: null, score: 0, oversBowled: 0 },
       endGame: { disable: false, time: null, score: 0, oversBowled: 0 },
@@ -124,6 +134,7 @@ export default class InningTwo extends React.Component {
       {
         edit: val.edit,
         editInterupt: val.editInterupt,
+        targetArray: val.targetArray,
         score: val.score,
         open: val.open,
         init: val.init,
@@ -133,6 +144,7 @@ export default class InningTwo extends React.Component {
         initialMissing: val.initialMissing,
         targetScore: val.targetScore,
         missing: val.missing,
+        initialTarget: val.initialTarget,
         acc: val.acc,
         ac: val.ac,
         R1: val.R1,
@@ -167,13 +179,14 @@ export default class InningTwo extends React.Component {
         targetScore: 0,
         missing: 0,
         acc: 0.0,
+        initialTarget: 0,
         ac: [],
         R1: 100.0,
         totalOvers: null,
         startingOvers: null,
         interupts: [],
         dialog: false,
-        cardString: null,
+        targetArray: [],
         endGame: { disable: false, time: null, score: 0, oversBowled: 0 },
         disabled: { disable: false, time: null, score: 0, oversBowled: 0 }
       });
@@ -246,7 +259,7 @@ export default class InningTwo extends React.Component {
       temp *= 10;
       let R2 = this.state.calculationData[temp][0];
       this.setState({ R2: R2, init: false }, () => {
-        this.calculate();
+        this.calculate(false);
       });
     }
     if (!edit) this.setState({ dialog: true, edit: false, editInterupt: {} });
@@ -274,7 +287,15 @@ export default class InningTwo extends React.Component {
         console.log(error);
         // Error saving data
       }
-      this.recalculate();
+      if (this.state.interupts.length !== this.state.targetArray.length) {
+        let tempArray = this.state.targetArray;
+        tempArray.push({ id: tempData.id, score: null });
+        this.setState({ targetArray: tempArray }, () => {
+          this.recalculate();
+        });
+      } else {
+        this.recalculate();
+      }
     });
   };
 
@@ -318,12 +339,12 @@ export default class InningTwo extends React.Component {
     this.setState(
       { acc: acc.toFixed(1), ac: ac, missing: missingOvers },
       () => {
-        this.calculate();
+        this.calculate(false);
       }
     );
   };
 
-  calculate = () => {
+  calculate = init => {
     let R2 = 0.0;
     R2 =
       this.state.calculationData[
@@ -339,16 +360,37 @@ export default class InningTwo extends React.Component {
     } else {
       targetScore = Math.floor(this.state.score * (R2 / this.state.R1) + 1);
     }
+
+    if (init) {
+      this.setState({ initialTarget: targetScore });
+    }
+
+    if (
+      this.state.targetArray.length > 0 &&
+      this.state.targetArray[this.state.targetArray.length - 1].score === null
+    ) {
+      let tempArray = this.state.targetArray;
+      tempArray[this.state.targetArray.length - 1] = {
+        id: tempArray[this.state.targetArray.length - 1].id,
+        score: targetScore
+      };
+      this.setState(
+        { targetArray: tempArray },
+        console.log("TargetArray", tempArray)
+      );
+    }
     console.log("ENDGAME", this.state.endGame);
     if (this.state.endGame.disable) {
-      alert(
-        "The Current Batting team has" +
-          (this.state.endGame.score >= targetScore ? " won " : " lost ") +
-          "with the targetScore being " +
-          targetScore +
-          " and their score being " +
-          this.state.endGame.score
-      );
+      if (Platform.OS !== "ios") {
+        alert(
+          "The Current Batting team has" +
+            (this.state.endGame.score >= targetScore ? " won " : " lost ") +
+            "with the targetScore being " +
+            targetScore +
+            " and their score being " +
+            this.state.endGame.score
+        );
+      }
     }
     console.log("[X - ?] ", this.state.globalValue[2]);
     console.log("[? - X]2 ", this.state.initialMissing);
@@ -360,12 +402,12 @@ export default class InningTwo extends React.Component {
 
     this.setState({ R2: R2, targetScore: targetScore });
 
-    this.generateCards();
     this.generateTable();
   };
 
   removeR2 = id => {
     let inter = this.state.interupts;
+    let tarArray = this.state.targetArray;
     const self = this;
     for (let i = 0; i < inter.length; i++) {
       if (inter[i].id === id) {
@@ -378,6 +420,7 @@ export default class InningTwo extends React.Component {
                 text: "OK",
                 onPress: i => {
                   let inter = self.state.interupts;
+                  let tarArray = self.state.targetArray;
                   console.log("I", i, " Inter ", inter);
                   let missing = self.state.missing;
                   for (let x = i; x < i.length; x++) {
@@ -400,9 +443,17 @@ export default class InningTwo extends React.Component {
                     }
                   }
                   inter.splice(i, inter.length - 1);
-                  self.setState({ interupts: inter, missing: missing }, () => {
-                    self.recalculate();
-                  });
+                  tarArray.splice(i, inter.length - 1);
+                  self.setState(
+                    {
+                      interupts: inter,
+                      missing: missing,
+                      targetArray: tarArray
+                    },
+                    () => {
+                      self.recalculate();
+                    }
+                  );
                 }
               },
               {
@@ -421,9 +472,13 @@ export default class InningTwo extends React.Component {
           }
           const missing = this.state.missing - inter[i].oversLost;
           inter.splice(i, 1);
-          this.setState({ interupts: inter, missing: missing }, () => {
-            this.recalculate();
-          });
+          tarArray.splice(i, 1);
+          this.setState(
+            { interupts: inter, missing: missing, targetArray: tarArray },
+            () => {
+              this.recalculate();
+            }
+          );
         }
         break;
       }
@@ -439,7 +494,7 @@ export default class InningTwo extends React.Component {
     }
     if (def) {
       this.setState({ open: false, score: val }, () => {
-        this.calculate();
+        this.calculate(true);
       });
     } else {
       // let tempArray = this.state.globalValue;
@@ -452,7 +507,7 @@ export default class InningTwo extends React.Component {
           // globalValue: tempArray
         },
         () => {
-          this.calculate();
+          this.calculate(true);
         }
       );
     }
@@ -473,6 +528,8 @@ export default class InningTwo extends React.Component {
     const data = {
       edit: this.state.edit,
       editInterupt: this.state.editInterupt,
+      targetArray: this.state.targetArray,
+      initialTarget: this.state.initialTarget,
       score: this.state.score,
       open: this.state.open,
       init: this.state.init,
@@ -528,86 +585,6 @@ export default class InningTwo extends React.Component {
     return string;
   };
 
-  generateCards = () => {
-    let data = "";
-    const testStyle = {
-      // borderBottomWidth: 1,
-      // borderBottomColor: "#000",
-      fontWeight: "bold",
-      fontSize: 15
-    };
-    const iconSize = 26;
-    data = this.state.interupts.map((interupt, index) => {
-      return (
-        <View
-          key={index}
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            paddingBottom: 15
-          }}
-        >
-          <TextInput
-            editable={false}
-            style={[testStyle, { backgroundColor: this._color }]}
-            value={interupt.score.toString()}
-          />
-          <TextInput
-            editable={false}
-            style={[testStyle, { backgroundColor: this._color }]}
-            value={
-              this.getSpacing(interupt.wickets.toString().length, 0) +
-              interupt.wickets.toString()
-            }
-          />
-          <TextInput
-            editable={false}
-            style={[testStyle, { backgroundColor: this._color }]}
-            value={
-              this.getSpacing(interupt.oversBowled.toString().length, 1) +
-              interupt.oversBowled.toString()
-            }
-          />
-          <TextInput
-            editable={false}
-            style={[testStyle, { backgroundColor: this._color }]}
-            value={
-              this.getSpacing(interupt.oversLost.toString().length, 2) +
-              interupt.oversLost.toString()
-            }
-          />
-          <Icon
-            name="exclamationcircle"
-            type="antdesign"
-            color="#FF8800"
-            onPress={() => {
-              alert(interupt.time.toString());
-            }}
-            style={{ backgroundColor: this._color, paddingLeft: 5 }}
-            size={iconSize}
-          />
-          <Icon
-            onPress={() => {
-              this.removeR2(interupt.id);
-            }}
-            style={{ backgroundColor: this._color, paddingLeft: 0 }}
-            size={iconSize}
-            color="#FF8800"
-            name="closecircle"
-            type="antdesign"
-          />
-          <View
-            style={{
-              borderBottomColor: "gray",
-              borderBottomWidth: 1
-            }}
-          />
-        </View>
-      );
-    });
-
-    this.setState({ cardString: data }, this.backupData);
-  };
   generateTable = () => {
     const info = index => (
       <TouchableOpacity>
@@ -668,10 +645,11 @@ export default class InningTwo extends React.Component {
       data[x].push(text(this.state.interupts[x].wickets.toString()));
       data[x].push(text(this.state.interupts[x].oversBowled.toString()));
       data[x].push(text(this.state.interupts[x].oversLost.toString()));
+      data[x].push(text(this.state.targetArray[x].score.toString()));
       data[x].push(info(x));
       data[x].push(del(x));
     }
-    this.setState({ tableData: data });
+    this.setState({ tableData: data }, this.backupData);
   };
 
   getValue = input => {
@@ -699,45 +677,45 @@ export default class InningTwo extends React.Component {
     };
     return (
       <SafeAreaView style={styles.container}>
-        <Text
-          style={{
-            textAlign: "center",
-            fontWeight: "bold",
-            fontSize: 18,
-            marginTop: 15
-          }}
-        >
-          Starting Score: {this.state.score.toString()}
-          {"    "}Starting Overs:{" "}
-          {this.state.gameRule !== undefined &&
-            (this.state.gameRule.Overs - this.state.initialMissing).toString()}
-        </Text>
         <View
           style={{
             justifyContent: "space-evenly",
             flexDirection: "row",
-            marginTop: 10,
-            paddingBottom: 10
+            marginTop: 20,
+            paddingBottom: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: "#000"
           }}
         >
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>Sc</Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            Wts
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 18
+            }}
+          >
+            Init Sc: {this.state.score.toString()}
           </Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            O/B
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 18
+            }}
+          >
+            Init Ovs:{" "}
+            {this.state.gameRule !== undefined &&
+              (
+                this.state.gameRule.Overs - this.state.initialMissing
+              ).toString()}
           </Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            O/L
-          </Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            Info
-          </Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            Dlt
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 18
+            }}
+          >
+            Init Target: {this.state.initialTarget}
           </Text>
         </View>
-        <ScrollView>{this.state.cardString}</ScrollView>
         <Table borderStyle={{ borderWidth: 2, borderColor: "#c8e1ff" }}>
           <Row
             data={this.state.tableHead}
@@ -795,7 +773,7 @@ export default class InningTwo extends React.Component {
           </Dialog.Container>
           <View style={[{ width: "30%", margin: 10 }]}>
             <Button
-              title="Calculations"
+              title="Summary"
               color="#FF8800"
               onPress={() => {
                 this.setState({ calculations: true });
