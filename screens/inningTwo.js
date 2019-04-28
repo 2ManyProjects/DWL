@@ -141,6 +141,7 @@ export default class InningTwo extends React.Component {
         interupts: val.interupts,
         dialog: val.dialog,
         globalValue: val.globalValue,
+        endGame: val.endGame,
         gameRule: val.gameRule,
         disabled: val.disabled
       },
@@ -173,6 +174,7 @@ export default class InningTwo extends React.Component {
         interupts: [],
         dialog: false,
         cardString: null,
+        endGame: { disable: false, time: null, score: 0, oversBowled: 0 },
         disabled: { disable: false, time: null, score: 0, oversBowled: 0 }
       });
     }
@@ -189,7 +191,7 @@ export default class InningTwo extends React.Component {
             oversBowled: 0
           };
         } else {
-          console.log("R1 Disabled: ", data.disabled);
+          // console.log("R1 Disabled: ", data.disabled);
         }
         self.setState(
           {
@@ -259,7 +261,6 @@ export default class InningTwo extends React.Component {
 
   create = data => {
     let tempData = data;
-    tempData["time"] = new Date().toLocaleString();
     let interruptArray = this.state.interupts;
     tempData["id"] = generateGuid();
     interruptArray.push(tempData);
@@ -338,6 +339,17 @@ export default class InningTwo extends React.Component {
     } else {
       targetScore = Math.floor(this.state.score * (R2 / this.state.R1) + 1);
     }
+    console.log("ENDGAME", this.state.endGame);
+    if (this.state.endGame.disable) {
+      alert(
+        "The Current Batting team has" +
+          (this.state.endGame.score >= targetScore ? " won " : " lost ") +
+          "with the targetScore being " +
+          targetScore +
+          " and their score being " +
+          this.state.endGame.score
+      );
+    }
     console.log("[X - ?] ", this.state.globalValue[2]);
     console.log("[? - X]2 ", this.state.initialMissing);
     console.log("Global Value ", this.state.globalValue[0]);
@@ -370,6 +382,22 @@ export default class InningTwo extends React.Component {
                   let missing = self.state.missing;
                   for (let x = i; x < i.length; x++) {
                     missing -= inter[x].oversLost;
+                    console.log(
+                      "Inter time",
+                      inter[x].time,
+                      " Compare",
+                      self.state.disabled.time
+                    );
+                    if (inter[x].time === self.state.endGame.time) {
+                      self.setState({
+                        endGame: {
+                          disable: false,
+                          time: null,
+                          score: 0,
+                          oversBowled: 0
+                        }
+                      });
+                    }
                   }
                   inter.splice(i, inter.length - 1);
                   self.setState({ interupts: inter, missing: missing }, () => {
@@ -386,6 +414,11 @@ export default class InningTwo extends React.Component {
             { cancelable: false }
           );
         } else {
+          if (inter[i].time === this.state.endGame.time) {
+            this.setState({
+              endGame: { disable: false, time: null, score: 0, oversBowled: 0 }
+            });
+          }
           const missing = this.state.missing - inter[i].oversLost;
           inter.splice(i, 1);
           this.setState({ interupts: inter, missing: missing }, () => {
@@ -458,6 +491,7 @@ export default class InningTwo extends React.Component {
       dialog: this.state.dialog,
       globalValue: this.state.globalValue,
       disabled: this.state.disabled,
+      endGame: this.state.endGame,
       gameRule: this.state.gameRule
     };
 
@@ -646,6 +680,18 @@ export default class InningTwo extends React.Component {
     else return "";
   };
 
+  disable = data => {
+    let finalData = {
+      disable: data.disable,
+      time: data.time,
+      score: data.score,
+      oversBowled: data.oversBowled
+    };
+    this.setState({ endGame: finalData }, () => {
+      this.create(data.interrupt);
+    });
+  };
+
   render() {
     const titleStyle = {
       fontWeight: "bold",
@@ -712,6 +758,7 @@ export default class InningTwo extends React.Component {
           missing={this.state.missing}
           globals={this.state.globalValue}
           gameRule={this.state.gameRule}
+          disable={this.disable}
         />
 
         <View style={[{ paddingTop: 15 }]}>
@@ -721,6 +768,7 @@ export default class InningTwo extends React.Component {
             <Button
               title="Add Interrupt"
               color="#FF8800"
+              disabled={this.state.endGame.disable}
               onPress={() => {
                 this.openInterrupt(false);
               }}

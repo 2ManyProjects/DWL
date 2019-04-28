@@ -111,7 +111,7 @@ class Interrupt extends Component {
 
   handleCreate = () => {
     if (this.state.endInning && this.state.score === 0) {
-      alert("Please enter the final score for Inning 1 before continuing");
+      alert("Please enter the final score for this Inning before continuing");
     } else {
       let BowledBalls = 0;
       let LostBalls = 0;
@@ -140,19 +140,28 @@ class Interrupt extends Component {
         this.handleCancel();
         data["time"] = time;
         if (this.state.endInning) {
-          this.props.disable({
-            disable: true,
-            time: time,
-            score: this.state.score,
-            oversBowled: this.state.oversBowled + BowledBalls
-          });
           data.oversLost = data.oversLeft;
-
-          console.log("Interrupt Data", data);
-          // data.oversLeft = 0;
-          this.props.create(data);
+          if (this.props.inning == 2) {
+            this.props.disable({
+              disable: true,
+              time: time,
+              score: this.state.score,
+              oversBowled: this.state.oversBowled + BowledBalls,
+              interrupt: data
+            });
+            // console.log("Interrupt Data", data);
+          } else {
+            this.props.disable({
+              disable: true,
+              time: time,
+              score: this.state.score,
+              oversBowled: this.state.oversBowled + BowledBalls
+            });
+            // console.log("Interrupt Data", data);
+            this.props.create(data);
+          }
         } else {
-          console.log("Interrupt Data", data);
+          // console.log("Interrupt Data", data);
           this.props.create(data);
         }
       }
@@ -234,20 +243,19 @@ class Interrupt extends Component {
                 keyboardType="decimal-pad"
               />
             </View>
-            {this.props.inning === 1 &&
-              this.state.oversBowled >= this.props.gameRule.minOvers && (
-                <CheckBox
-                  center
-                  title="End Inning"
-                  checked={this.state.endInning}
-                  onPress={() =>
-                    this.setState({
-                      endInning: !this.state.endInning,
-                      oversLost: 0
-                    })
-                  }
-                />
-              )}
+            {this.state.oversBowled >= this.props.gameRule.minOvers && (
+              <CheckBox
+                center
+                title="End Inning"
+                checked={this.state.endInning}
+                onPress={() =>
+                  this.setState({
+                    endInning: !this.state.endInning,
+                    oversLost: 0
+                  })
+                }
+              />
+            )}
             <View
               style={{
                 flex: 1,
