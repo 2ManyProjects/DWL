@@ -64,7 +64,9 @@ class Init extends Component {
           <Dialog.Description> </Dialog.Description>
           <Dialog.Input
             label={
-              this.props.disabled.disable ? "Inning 1 Overs" : "Inning 1 Score"
+              this.props.disabled.disable
+                ? "Inning 2 playable Overs"
+                : "Inning 1 Score"
             }
             onChange={event => {
               this.onChange(event, "score");

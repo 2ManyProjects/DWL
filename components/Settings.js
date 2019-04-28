@@ -175,8 +175,7 @@ class Settings extends React.Component {
               alignItems: "center"
             }}
           >
-            <Text>Total Overs</Text>
-            <TextInput
+            <Dialog.Input
               style={{
                 height: 40,
                 width: 200,
@@ -184,12 +183,12 @@ class Settings extends React.Component {
                 textAlign: "center",
                 borderWidth: 1
               }}
+              label="Total Overs"
               onChangeText={input => this.onChanged(input, index, 0)}
               value={this.checkValue(this.state.settings[index].Overs)}
               maxLength={3}
             />
-            <Text>{"\n"} Min Overs</Text>
-            <TextInput
+            <Dialog.Input
               style={{
                 height: 40,
                 width: 200,
@@ -197,13 +196,13 @@ class Settings extends React.Component {
                 textAlign: "center",
                 borderWidth: 1
               }}
+              label="Min Overs"
               keyboardType="numeric"
               onChangeText={input => this.onChanged(input, index, 2)}
               value={this.checkValue(this.state.settings[index].minOvers)}
               maxLength={3} //setting limit of input
             />
-            <Text>{"\n"} G Value</Text>
-            <TextInput
+            <Dialog.Input
               style={{
                 height: 40,
                 width: 200,
@@ -211,7 +210,7 @@ class Settings extends React.Component {
                 textAlign: "center",
                 borderWidth: 1
               }}
-              label="G"
+              label="G Value"
               keyboardType="numeric"
               onChangeText={input => this.onChanged(input, index, 1)}
               value={this.checkValue(this.state.settings[index].G)}
@@ -236,27 +235,29 @@ class Settings extends React.Component {
       <Dialog.Container visible={this.state.open}>
         <Dialog.Title>Match Settings</Dialog.Title>
         <ScrollView>
-          {this.state.dataString}
-          <Button
-            onPress={() => {
-              this.addNew();
-            }}
-            title="Add"
-            color="#FF8800"
-          />
+          <View style={{ marginBottom: Platform.OS === "ios" ? 100 : 10 }}>
+            {this.state.dataString}
+            <Button
+              onPress={() => {
+                this.addNew();
+              }}
+              title="Add"
+              color="#FF8800"
+            />
+            <Dialog.Button
+              label="Save"
+              onPress={() => {
+                this.checkInputs();
+              }}
+            />
+            <Dialog.Button
+              label="Cancel"
+              onPress={() => {
+                this.setState({ open: false }, this.props.close());
+              }}
+            />
+          </View>
         </ScrollView>
-        <Dialog.Button
-          label="Save"
-          onPress={() => {
-            this.checkInputs();
-          }}
-        />
-        <Dialog.Button
-          label="Cancel"
-          onPress={() => {
-            this.setState({ open: false }, this.props.close());
-          }}
-        />
       </Dialog.Container>
     );
   }

@@ -4,24 +4,37 @@ import {
   StyleSheet,
   View,
   Text,
+  TextInput,
   Button,
   Platform,
   ScrollView,
   AsyncStorage,
+  TouchableOpacity,
   Alert
 } from "react-native";
-import { FloatingAction } from "react-native-floating-action";
+import Icon from "react-native-vector-icons/AntDesign";
 import Interrupt from "../components/addInterrupt";
 import { subtractOvers, generateGuid } from "../components/helpers";
-import { Card } from "react-native-elements";
+import {
+  Table,
+  TableWrapper,
+  Row,
+  Rows,
+  Col,
+  Cols,
+  Cell
+} from "react-native-table-component";
 
 export default class InningOne extends React.Component {
+  _color = "#fff";
   static navigationOptions = {
     title: "Inning 1"
   };
   constructor(props) {
     super(props);
     this.state = {
+      tableHead: ["Score", "Wickets", "O/Bowled", "O/Lost", "Info", "Del"],
+      tableData: [],
       edit: false,
       editInterupt: {},
       gameID: "", //
@@ -249,6 +262,7 @@ export default class InningOne extends React.Component {
       };
 
       this.generateCards();
+      this.generateTable();
       try {
         await AsyncStorage.mergeItem("Inning1", JSON.stringify(data));
       } catch (error) {
@@ -357,98 +371,268 @@ export default class InningOne extends React.Component {
     this.setState({ disabled: data });
   };
 
+  getSpacing = (len, data) => {
+    let string = "";
+    for (let x = 0; x < 3 - len; x++) {
+      switch (data) {
+        case 0:
+          string += "     ";
+          break;
+        case 1:
+          string += "      ";
+          break;
+        case 2:
+          string += "   ";
+          break;
+        case 4:
+          string += "  ";
+          break;
+      }
+    }
+    return string;
+  };
+
   generateCards = () => {
     let data = "";
-    const style = {
-      flex: 1,
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 10
-    }; //
+    const testStyle = {
+      // borderBottomWidth: 1,
+      // borderBottomColor: "#000",
+      fontWeight: "bold",
+      fontSize: 15
+    };
+    const iconSize = 26;
     data = this.state.interupts.map((interupt, index) => {
       return (
-        <Card key={index}>
-          <View style={style}>
-            <View style={{ flex: 1, flexDirection: "row" }}>
-              <View style={style}>
-                <Text>Score</Text>
-                <Text>{interupt.score.toString()}</Text>
-              </View>
-
-              <View style={style}>
-                <Text>Wickets</Text>
-                <Text>{interupt.wickets.toString()}</Text>
-              </View>
-
-              <View style={style}>
-                <Text>Ov/Bowled</Text>
-                <Text>{interupt.oversBowled.toString()}</Text>
-              </View>
-
-              <View style={style}>
-                <Text>Ov/Lost</Text>
-                <Text>{interupt.oversLost.toString()}</Text>
-              </View>
-            </View>
-
-            <Text>{interupt.time.toString()}</Text>
-
-            {/* <Text>{interupt.id}</Text> */}
-
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                justifyContent: "center",
-                marginTop: 10,
-                alignItems: "center"
-              }}
-            >
-              {/* <Button
-                onPress={() => {
-                  if (this.state.block) {
-                    alert(
-                      "Please Clear interupts from Inning 2 before modifying Inning 1"
-                    );
-                  } else {
-                    this.openInterrupt(true, interupt);
-                  }
-                }}
-                title="Edit"
-                color="#FF8800"
-              />
-              <Text>{"     "}</Text> */}
-              <Button
-                onPress={() => {
-                  if (this.state.block) {
-                    alert(
-                      "Please Clear interupts from Inning 2 before modifying Inning 1"
-                    );
-                  } else {
-                    this.removeR1(interupt.id);
-                  }
-                }}
-                title="Delete"
-                color="#FF8800"
-              />
-            </View>
-          </View>
-        </Card>
+        <View
+          key={index}
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-evenly",
+            paddingBottom: 15
+          }}
+        >
+          <TextInput
+            editable={false}
+            style={[testStyle, { backgroundColor: this._color }]}
+            value={interupt.score.toString()}
+          />
+          <TextInput
+            editable={false}
+            style={[testStyle, { backgroundColor: this._color }]}
+            value={
+              this.getSpacing(interupt.wickets.toString().length, 0) +
+              interupt.wickets.toString()
+            }
+          />
+          <TextInput
+            editable={false}
+            style={[testStyle, { backgroundColor: this._color }]}
+            value={
+              this.getSpacing(interupt.oversBowled.toString().length, 1) +
+              interupt.oversBowled.toString()
+            }
+          />
+          <TextInput
+            editable={false}
+            style={[testStyle, { backgroundColor: this._color }]}
+            value={
+              this.getSpacing(interupt.oversLost.toString().length, 2) +
+              interupt.oversLost.toString()
+            }
+          />
+          <Icon
+            name="exclamationcircle"
+            type="antdesign"
+            color="#FF8800"
+            onPress={() => {
+              alert(interupt.time.toString());
+            }}
+            style={{ backgroundColor: this._color, paddingLeft: 5 }}
+            size={iconSize}
+          />
+          <Icon
+            onPress={() => {
+              if (this.state.block) {
+                alert(
+                  "Please Clear interupts from Inning 2 before modifying Inning 1"
+                );
+              } else {
+                this.removeR1(interupt.id);
+              }
+            }}
+            style={{ backgroundColor: this._color, paddingLeft: 0 }}
+            size={iconSize}
+            color="#FF8800"
+            name="closecircle"
+            type="antdesign"
+          />
+          <View
+            style={{
+              borderBottomColor: "gray",
+              borderBottomWidth: 1
+            }}
+          />
+        </View>
       );
     });
 
     this.setState({ cardString: data }, this.backupData);
   };
 
+  generateTable = () => {
+    const info = index => (
+      <TouchableOpacity>
+        <View
+          style={{
+            alignItems: "center"
+          }}
+        >
+          <Icon
+            name="exclamationcircle"
+            type="antdesign"
+            color="#FF8800"
+            onPress={() => {
+              alert(this.state.interupts[index].time.toString());
+            }}
+            style={{ backgroundColor: this._color, paddingLeft: 5 }}
+            size={26}
+          />
+        </View>
+      </TouchableOpacity>
+    );
+    const del = index => (
+      <TouchableOpacity>
+        <View
+          style={{
+            alignItems: "center"
+          }}
+        >
+          <Icon
+            onPress={() => {
+              if (this.state.block) {
+                alert(
+                  "Please Clear interupts from Inning 2 before modifying Inning 1"
+                );
+              } else {
+                this.removeR1(this.state.interupts[index].id);
+              }
+            }}
+            style={{ backgroundColor: this._color, paddingLeft: 0 }}
+            size={26}
+            color="#FF8800"
+            name="closecircle"
+            type="antdesign"
+          />
+        </View>
+      </TouchableOpacity>
+    );
+
+    const text = String => (
+      <TouchableOpacity>
+        <View
+          style={{
+            alignItems: "center"
+          }}
+        >
+          <Text>{String}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+    let data = this.state.interupts.map(data => {
+      return [];
+    });
+    for (let x = 0; x < this.state.interupts.length; x++) {
+      data[x].push(text(this.state.interupts[x].score.toString()));
+      data[x].push(text(this.state.interupts[x].wickets.toString()));
+      data[x].push(text(this.state.interupts[x].oversBowled.toString()));
+      data[x].push(text(this.state.interupts[x].oversLost.toString()));
+      data[x].push(info(x));
+      data[x].push(del(x));
+    }
+    this.setState({ tableData: data });
+  };
+
   render() {
     const { navigation, screenProps } = this.props;
+    const titleStyle = {
+      fontWeight: "bold",
+      fontSize: 18
+    };
+
     return (
       <SafeAreaView style={styles.container}>
-        <View>
-          <Text> </Text>
+        <View
+          style={{
+            justifyContent: "space-evenly",
+            flexDirection: "row",
+            marginTop: 20,
+            paddingBottom: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: "#000"
+          }}
+        >
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 18
+            }}
+          >
+            Format:{" "}
+            {this.state.gameRule.Overs !== undefined &&
+              this.state.gameRule.Overs.toString()}
+          </Text>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 18
+            }}
+          >
+            Overs Lost: {this.state.missing.toString()}
+          </Text>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 18
+            }}
+          >
+            StartedAs: {this.state.globalValue[2].toString()}
+          </Text>
+        </View>
+        <View
+          style={{
+            justifyContent: "space-evenly",
+            flexDirection: "row",
+            marginTop: 10,
+            paddingBottom: 10
+          }}
+        >
+          <Text style={[titleStyle, { backgroundColor: this._color }]}>Sc</Text>
+          <Text style={[titleStyle, { backgroundColor: this._color }]}>
+            Wts
+          </Text>
+          <Text style={[titleStyle, { backgroundColor: this._color }]}>
+            O/B
+          </Text>
+          <Text style={[titleStyle, { backgroundColor: this._color }]}>
+            O/L
+          </Text>
+          <Text style={[titleStyle, { backgroundColor: this._color }]}>
+            Info
+          </Text>
+          <Text style={[titleStyle, { backgroundColor: this._color }]}>
+            Dlt
+          </Text>
         </View>
         <ScrollView>{this.state.cardString}</ScrollView>
+        <Table borderStyle={{ borderWidth: 2, borderColor: "#c8e1ff" }}>
+          <Row
+            data={this.state.tableHead}
+            style={tableStyle.head}
+            textStyle={tableStyle.text}
+          />
+          <Rows data={this.state.tableData} textStyle={tableStyle.text} />
+        </Table>
+
         <Interrupt
           inning={1}
           edit={this.edit}
@@ -486,6 +670,12 @@ export default class InningOne extends React.Component {
     );
   }
 }
+
+const tableStyle = StyleSheet.create({
+  container: { flex: 1, padding: 16, paddingTop: 30, backgroundColor: "#fff" },
+  head: { height: 40, backgroundColor: "#f1f8ff" },
+  text: { margin: 6 }
+});
 
 const dependant = StyleSheet.create({
   OS: {
