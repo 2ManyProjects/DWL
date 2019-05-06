@@ -16,6 +16,7 @@ import data from "../raw/data";
 import { Card } from "react-native-elements";
 import Dialog from "react-native-dialog";
 import Settings from "../components/Settings";
+import { Dropdown } from "react-native-material-dropdown";
 //
 export default class HomeScreen extends React.Component {
   constructor(props) {
@@ -308,6 +309,63 @@ export default class HomeScreen extends React.Component {
             maxLength={2} //setting limit of input
           />
         </View>
+        <Dropdown
+          baseColor="rgba(0, 0, 0, 1)"
+          value={
+            "Overs: " +
+            this.state.selectedRule.Overs +
+            ", Min: " +
+            this.state.selectedRule.minOvers +
+            ", G: " +
+            this.state.selectedRule.G
+          }
+          data={this.state.gameRule.map(game => ({
+            value:
+              "Overs: " +
+              game.Overs +
+              ", Min: " +
+              game.minOvers +
+              ", G: " +
+              game.G
+          }))}
+          containerStyle={{
+            width: 200,
+            height: 50,
+            alignSelf: "center"
+          }}
+          pickerStyle={{
+            backgroundColor: "rgba(255, 255, 255, 1.0)",
+            borderRadius: 2,
+
+            position: "absolute",
+
+            ...Platform.select({
+              ios: {
+                shadowRadius: 2,
+                shadowColor: "rgba(0, 0, 0, 1.0)",
+                shadowOpacity: 0.54,
+                shadowOffset: { width: 0, height: 2 }
+              },
+
+              android: {
+                elevation: 2
+              }
+            })
+          }}
+          onChangeText={(value, index, data) =>
+            this.setState(
+              {
+                selectedRule: this.state.gameRule[index],
+                totalOvers: this.state.gameRule[index].Overs,
+                startingOvers: this.state.gameRule[index].Overs
+              },
+              () => {
+                console.log("SELECTED ", this.state.selectedRule);
+              }
+            )
+          }
+        />
+
         <Text>{"\n"}</Text>
         <View
           style={{
@@ -357,7 +415,7 @@ export default class HomeScreen extends React.Component {
           />
         </View>
         <Text>{"\n"}</Text>
-        <Picker
+        {/* <Picker
           style={{ height: 50, width: 200 }}
           selectedValue={this.state.selectedRule}
           onValueChange={(itemValue, itemIndex) =>
@@ -388,7 +446,7 @@ export default class HomeScreen extends React.Component {
               value={game}
             />
           ))}
-        </Picker>
+        </Picker> */}
 
         <Dialog.Container visible={this.state.open}>
           <Dialog.Title>Load or Delete</Dialog.Title>

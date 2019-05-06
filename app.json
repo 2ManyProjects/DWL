@@ -1,13 +1,14 @@
 {
   "expo": {
-    "name": "BEDL DwL Calculator",
+    "name": "Standard DuckWorth-Lewis Calculator",
     "slug": "DWL",
     "privacy": "public",
     "sdkVersion": "32.0.0",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "android": {
+      "package": "com.HalfnStuff.DuckWorthLewisCalculator"
+    },
+    "primaryColor": "#FF8800",
+    "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -19,11 +20,12 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
+      "bundleIdentifier": "com.HalfnStuff.DuckWorthLewisCalculator",
       "supportsTablet": true
-    }
+    },
+    "description": "Standard DuckWorth-Lewis Calculator made by S. Kamat",
+    "githubUrl": "https://github.com/2ManyProjects/DWL"
   }
 }
