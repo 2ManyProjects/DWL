@@ -267,48 +267,9 @@ export default class HomeScreen extends React.Component {
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
       >
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <Text>{"\n"}</Text>
-          <Text>{"\n"}</Text>
-          <Text>{"\n"}</Text>
-          <TextInput
-            placeholder="Enter Game ID"
-            style={{
-              height: 40,
-              width: 200,
-              borderColor: "gray",
-              textAlign: "center",
-              borderWidth: 1
-            }}
-            onChangeText={gameID =>
-              this.setState({ gameID }, this.checkInputs())
-            }
-            value={this.state.gameID}
-            maxLength={10}
-          />
-          <Text>{"\n"}</Text>
-          <TextInput
-            style={{
-              height: 40,
-              width: 200,
-              borderColor: "gray",
-              textAlign: "center",
-              borderWidth: 1
-            }}
-            keyboardType="numeric"
-            placeholder="Starting Overs"
-            onChangeText={input => this.onChanged(input)}
-            value={this.getOvers("startingOvers")}
-            maxLength={2} //setting limit of input
-          />
-        </View>
+        <Text>{"\n"}</Text>
+        <Text>{"\n"}</Text>
+        <Text>{"\n"}</Text>
         <Dropdown
           baseColor="rgba(0, 0, 0, 1)"
           value={
@@ -330,7 +291,7 @@ export default class HomeScreen extends React.Component {
           }))}
           containerStyle={{
             width: 200,
-            height: 50,
+            height: 40,
             alignSelf: "center"
           }}
           pickerStyle={{
@@ -365,6 +326,47 @@ export default class HomeScreen extends React.Component {
             )
           }
         />
+        <Text>{"\n"}</Text>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          <Text>{"\n"}</Text>
+          <TextInput
+            placeholder="Enter Game ID"
+            style={{
+              height: 40,
+              width: 200,
+              borderColor: "gray",
+              textAlign: "center",
+              borderWidth: 1
+            }}
+            onChangeText={gameID =>
+              this.setState({ gameID }, this.checkInputs())
+            }
+            value={this.state.gameID}
+            maxLength={10}
+          />
+          <Text>{"\n"}</Text>
+          <TextInput
+            style={{
+              height: 40,
+              width: 200,
+              borderColor: "gray",
+              textAlign: "center",
+              borderWidth: 1
+            }}
+            keyboardType="numeric"
+            placeholder="Starting Overs"
+            onChangeText={input => this.onChanged(input)}
+            value={this.getOvers("startingOvers")}
+            maxLength={2} //setting limit of input
+          />
+        </View>
 
         <Text>{"\n"}</Text>
         <View
