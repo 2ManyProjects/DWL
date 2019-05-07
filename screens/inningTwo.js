@@ -694,7 +694,7 @@ export default class InningTwo extends React.Component {
               fontSize: 18
             }}
           >
-            Init Sc: {this.state.score.toString()}
+            1st Inn: {this.state.score.toString()}
           </Text>
           <Text
             style={{
@@ -702,7 +702,7 @@ export default class InningTwo extends React.Component {
               fontSize: 18
             }}
           >
-            Init Ovs:{" "}
+            2nd Inn Ov:{" "}
             {this.state.gameRule !== undefined &&
               (
                 this.state.globalValue[2] - this.state.initialMissing
@@ -714,7 +714,7 @@ export default class InningTwo extends React.Component {
               fontSize: 18
             }}
           >
-            Init Target: {this.state.initialTarget}
+            Target: {this.state.initialTarget}
           </Text>
         </View>
         <Table borderStyle={{ borderWidth: 2, borderColor: "#c8e1ff" }}>
@@ -771,7 +771,16 @@ export default class InningTwo extends React.Component {
               }}
             />
           </Dialog.Container>
-          <View style={[{ width: "30%", margin: 10 }]}>
+          <View
+            style={[
+              {
+                flexDirection: "row",
+                paddingLeft: 50,
+                paddingRight: 50,
+                justifyContent: "space-between"
+              }
+            ]}
+          >
             <Button
               title="Summary"
               color="#FF8800"
@@ -810,20 +819,22 @@ export default class InningTwo extends React.Component {
                 );
               }}
             />
-            {this.setup() && (
-              <Init
-                open={this.state.open}
-                closeInit={this.Submit}
-                disabled={this.state.disabled}
-                gameRule={this.state.gameRule}
-              />
-            )}
           </View>
+          {this.setup() && (
+            <Init
+              open={this.state.open}
+              closeInit={this.Submit}
+              disabled={this.state.disabled}
+              gameRule={this.state.gameRule}
+            />
+          )}
         </View>
       </SafeAreaView>
     );
   }
 }
+
+//Seperate the summary and reset buttons, send DenNY Uncle Connection Details, Change Summaries
 
 const tableStyle = StyleSheet.create({
   container: { flex: 1, padding: 16, paddingTop: 30, backgroundColor: "#fff" },

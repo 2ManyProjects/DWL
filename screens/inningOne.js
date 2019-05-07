@@ -581,23 +581,24 @@ export default class InningOne extends React.Component {
             {this.state.gameRule.Overs !== undefined &&
               this.state.gameRule.Overs.toString()}
           </Text>
-          <Text
+          {/* <Text
             style={{
               fontWeight: "bold",
               fontSize: 18
             }}
           >
             Overs Lost: {this.state.missing.toString()}
-          </Text>
+          </Text> */}
           <Text
             style={{
               fontWeight: "bold",
               fontSize: 18
             }}
           >
-            StartedAs: {this.state.globalValue[2].toString()}
+            Started As: {this.state.globalValue[2].toString()}
           </Text>
         </View>
+
         {/* <View
           style={{
             justifyContent: "space-evenly",
