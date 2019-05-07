@@ -26,7 +26,7 @@ export default class HomeScreen extends React.Component {
     // });
 
     this.state = {
-      gameID: "asdasd",
+      gameID: "",
       dataString: null,
       openSettings: false,
       open: false,

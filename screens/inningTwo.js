@@ -83,6 +83,7 @@ export default class InningTwo extends React.Component {
     arr[0] = this.state.gameRule.G;
     arr[1] = this.state.gameRule.Overs;
     arr[2] = start;
+    console.log("DATA", start);
     this.setState({ globalValue: arr });
   };
 
@@ -502,8 +503,8 @@ export default class InningTwo extends React.Component {
       this.setState(
         {
           open: false,
-          missing: this.state.gameRule.Overs - parseInt(val),
-          initialMissing: this.state.gameRule.Overs - parseInt(val)
+          missing: this.state.globalValue[2] - parseInt(val),
+          initialMissing: this.state.globalValue[2] - parseInt(val)
           // globalValue: tempArray
         },
         () => {
@@ -704,7 +705,7 @@ export default class InningTwo extends React.Component {
             Init Ovs:{" "}
             {this.state.gameRule !== undefined &&
               (
-                this.state.gameRule.Overs - this.state.initialMissing
+                this.state.globalValue[2] - this.state.initialMissing
               ).toString()}
           </Text>
           <Text
@@ -757,7 +758,6 @@ export default class InningTwo extends React.Component {
             <Text>Target: {this.state.targetScore.toString()}</Text>
             <Text>R1: {this.state.R1.toFixed(1).toString()}</Text>
             <Text>R2: {this.state.R2.toFixed(1).toString()}</Text>
-            <Text>Acc: {this.state.acc.toString()}</Text>
             <Text>Initial Missing: {this.state.initialMissing.toString()}</Text>
             <Text>Total Missing: {this.state.missing.toString()}</Text>
             <Text>G: {this.state.globalValue[0].toString()}</Text>

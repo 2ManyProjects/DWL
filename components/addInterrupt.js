@@ -293,8 +293,16 @@ class Interrupt extends Component {
                 this.state.oversBowled + this.state.oversBowledBall / 10
               ).toString()}
             </Text>
-            <Dialog.Button label="Submit" onPress={this.handleCreate} />
-            <Dialog.Button label="Cancel" onPress={this.handleCancel} />
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignSelf: "center"
+              }}
+            >
+              <Dialog.Button label="Submit" onPress={this.handleCreate} />
+              <Dialog.Button label="Cancel" onPress={this.handleCancel} />
+            </View>
           </KeyboardAwareScrollView>
         </Dialog.Container>
       </SafeAreaView>
