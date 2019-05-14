@@ -104,6 +104,7 @@ export default class InningOne extends React.Component {
       await this.loadGame(val.Inning1);
     } else {
       await this._retrieveData(false);
+      this.calculateR1();
     }
     this.props.navigation.addListener("willFocus", this.load);
     // this.props.navigation.addListener("willBlur", this.save);
