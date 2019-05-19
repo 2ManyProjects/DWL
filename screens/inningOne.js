@@ -261,8 +261,6 @@ export default class InningOne extends React.Component {
         gameRule: this.state.gameRule,
         disabled: this.state.disabled
       };
-
-      this.generateCards();
       this.generateTable();
       try {
         await AsyncStorage.mergeItem("Inning1", JSON.stringify(data));
@@ -372,114 +370,6 @@ export default class InningOne extends React.Component {
     this.setState({ disabled: data });
   };
 
-  getSpacing = (len, data) => {
-    let string = "";
-    for (let x = 0; x < 3 - len; x++) {
-      switch (data) {
-        case 0:
-          string += "     ";
-          break;
-        case 1:
-          string += "      ";
-          break;
-        case 2:
-          string += "   ";
-          break;
-        case 4:
-          string += "  ";
-          break;
-      }
-    }
-    return string;
-  };
-
-  generateCards = () => {
-    let data = "";
-    const testStyle = {
-      // borderBottomWidth: 1,
-      // borderBottomColor: "#000",
-      fontWeight: "bold",
-      fontSize: 15
-    };
-    const iconSize = 26;
-    data = this.state.interupts.map((interupt, index) => {
-      return (
-        <View
-          key={index}
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            paddingBottom: 15
-          }}
-        >
-          <TextInput
-            editable={false}
-            style={[testStyle, { backgroundColor: this._color }]}
-            value={interupt.score.toString()}
-          />
-          <TextInput
-            editable={false}
-            style={[testStyle, { backgroundColor: this._color }]}
-            value={
-              this.getSpacing(interupt.wickets.toString().length, 0) +
-              interupt.wickets.toString()
-            }
-          />
-          <TextInput
-            editable={false}
-            style={[testStyle, { backgroundColor: this._color }]}
-            value={
-              this.getSpacing(interupt.oversBowled.toString().length, 1) +
-              interupt.oversBowled.toString()
-            }
-          />
-          <TextInput
-            editable={false}
-            style={[testStyle, { backgroundColor: this._color }]}
-            value={
-              this.getSpacing(interupt.oversLost.toString().length, 2) +
-              interupt.oversLost.toString()
-            }
-          />
-          <Icon
-            name="exclamationcircle"
-            type="antdesign"
-            color="#FF8800"
-            onPress={() => {
-              alert(interupt.time.toString());
-            }}
-            style={{ backgroundColor: this._color, paddingLeft: 5 }}
-            size={iconSize}
-          />
-          <Icon
-            onPress={() => {
-              if (this.state.block) {
-                alert(
-                  "Please Clear interupts from Inning 2 before modifying Inning 1"
-                );
-              } else {
-                this.removeR1(interupt.id);
-              }
-            }}
-            style={{ backgroundColor: this._color, paddingLeft: 0 }}
-            size={iconSize}
-            color="#FF8800"
-            name="closecircle"
-            type="antdesign"
-          />
-          <View
-            style={{
-              borderBottomColor: "gray",
-              borderBottomWidth: 1
-            }}
-          />
-        </View>
-      );
-    });
-
-    this.setState({ cardString: data }, this.backupData);
-  };
-
   generateTable = () => {
     const info = index => (
       <TouchableOpacity>
@@ -582,14 +472,6 @@ export default class InningOne extends React.Component {
             {this.state.gameRule.Overs !== undefined &&
               this.state.gameRule.Overs.toString()}
           </Text>
-          {/* <Text
-            style={{
-              fontWeight: "bold",
-              fontSize: 18
-            }}
-          >
-            Overs Lost: {this.state.missing.toString()}
-          </Text> */}
           <Text
             style={{
               fontWeight: "bold",
@@ -599,33 +481,6 @@ export default class InningOne extends React.Component {
             Started As: {this.state.globalValue[2].toString()}
           </Text>
         </View>
-
-        {/* <View
-          style={{
-            justifyContent: "space-evenly",
-            flexDirection: "row",
-            marginTop: 10,
-            paddingBottom: 10
-          }}
-        >
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>Sc</Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            Wts
-          </Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            O/B
-          </Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            O/L
-          </Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            Info
-          </Text>
-          <Text style={[titleStyle, { backgroundColor: this._color }]}>
-            Dlt
-          </Text>
-        </View>
-        <ScrollView>{this.state.cardString}</ScrollView> */}
         <Table borderStyle={{ borderWidth: 2, borderColor: "#c8e1ff" }}>
           <Row
             data={this.state.tableHead}
@@ -653,7 +508,7 @@ export default class InningOne extends React.Component {
           style={[{ width: "30%", alignSelf: "center", paddingBottom: 15 }]}
         >
           <Button
-            title="Add Interrupt"
+            title="Add Interruption"
             color="#FF8800"
             disabled={this.state.disabled.disable}
             onPress={() => {

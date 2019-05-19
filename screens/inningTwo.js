@@ -565,27 +565,6 @@ export default class InningTwo extends React.Component {
     }
   };
 
-  getSpacing = (len, data) => {
-    let string = "";
-    for (let x = 0; x < 3 - len; x++) {
-      switch (data) {
-        case 0:
-          string += "     ";
-          break;
-        case 1:
-          string += "      ";
-          break;
-        case 2:
-          string += "   ";
-          break;
-        case 4:
-          string += "  ";
-          break;
-      }
-    }
-    return string;
-  };
-
   generateTable = () => {
     const info = index => (
       <TouchableOpacity>
@@ -745,7 +724,7 @@ export default class InningTwo extends React.Component {
             style={[{ width: "30%", alignSelf: "center", paddingBottom: 15 }]}
           >
             <Button
-              title="Add Interrupt"
+              title="Add Interruptions"
               color="#FF8800"
               disabled={this.state.endGame.disable}
               onPress={() => {

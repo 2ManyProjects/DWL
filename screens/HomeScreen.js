@@ -9,14 +9,17 @@ import {
   Text,
   Button,
   TextInput,
-  View
+  View,
+  Alert
 } from "react-native";
 import { AsyncStorage } from "react-native";
+import Icon from "react-native-vector-icons/AntDesign";
 import data from "../raw/data";
 import { Card } from "react-native-elements";
 import Dialog from "react-native-dialog";
 import Settings from "../components/Settings";
 import { Dropdown } from "react-native-material-dropdown";
+import ModalDropdown from "react-native-modal-dropdown";
 //
 export default class HomeScreen extends React.Component {
   constructor(props) {
@@ -34,7 +37,7 @@ export default class HomeScreen extends React.Component {
       startingOvers: 50,
       games: [],
       calculationData: data,
-      submit: false,
+      submit: true,
       gameRule: [
         { Overs: 15, G: 90, minOvers: 3, id: 0 },
         { Overs: 20, G: 120, minOvers: 5, id: 1 },
@@ -169,18 +172,45 @@ export default class HomeScreen extends React.Component {
 
   onSubmit = async () => {
     let titles = await AsyncStorage.getAllKeys();
-    if (titles.indexOf(this.state.gameID) > -1)
-      alert(
-        "This game ID is already in use, saving this match will overwrite the past file"
+    if (titles.indexOf(this.state.gameID) > -1) {
+      Alert.alert(
+        "Setup Message",
+        "This game ID is already in use, saving this match will overwrite the past file",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              const data = {
+                gameID: this.state.gameID,
+                totalOvers: this.state.selectedRule.Overs,
+                startingOvers: this.state.startingOvers,
+                calculationData: this.state.calculationData,
+                gameRule: this.state.selectedRule
+              };
+              this._storeData(data);
+            }
+          },
+          {
+            text: "Cancel",
+            onPress: () => {},
+            style: "cancel"
+          }
+        ],
+        { cancelable: false }
       );
-    const data = {
-      gameID: this.state.gameID,
-      totalOvers: this.state.selectedRule.Overs,
-      startingOvers: this.state.startingOvers,
-      calculationData: this.state.calculationData,
-      gameRule: this.state.selectedRule
-    };
-    this._storeData(data);
+      // alert(
+      //   "This game ID is already in use, saving this match will overwrite the past file"
+      // );
+    } else {
+      const data = {
+        gameID: this.state.gameID,
+        totalOvers: this.state.selectedRule.Overs,
+        startingOvers: this.state.startingOvers,
+        calculationData: this.state.calculationData,
+        gameRule: this.state.selectedRule
+      };
+      this._storeData(data);
+    }
   };
 
   getOvers = input => {
@@ -261,6 +291,16 @@ export default class HomeScreen extends React.Component {
     this.setState({ dataString: data });
   };
 
+  getOptions = () => {
+    let temp = [];
+    for (const [index, value] of this.state.gameRule.entries()) {
+      temp.push(
+        "Overs: " + value.Overs + ", Min: " + value.minOvers + ", G: " + value.G
+      );
+    }
+    return temp;
+  };
+
   render() {
     return (
       <ScrollView
@@ -270,7 +310,57 @@ export default class HomeScreen extends React.Component {
         <Text>{"\n"}</Text>
         <Text>{"\n"}</Text>
         <Text>{"\n"}</Text>
-        <Dropdown
+        <View>
+          <ModalDropdown
+            options={this.getOptions()}
+            defaultValue={
+              "Overs: " +
+              this.state.selectedRule.Overs +
+              ", Min: " +
+              this.state.selectedRule.minOvers +
+              ", G: " +
+              this.state.selectedRule.G
+            }
+            style={{
+              width: 200,
+              height: 30,
+              alignSelf: "center",
+              borderBottomWidth: 1,
+              borderBottomColor: "gray"
+            }}
+            textStyle={{
+              fontSize: 18,
+              color: "black",
+              textAlign: "center",
+              textAlignVertical: "center"
+            }}
+            dropdownStyle={{
+              width: 200,
+              borderColor: "gray",
+              borderWidth: 2,
+              borderRadius: 3
+            }}
+            dropdownTextStyle={{
+              fontSize: 16,
+              color: "gray",
+              textAlign: "center",
+              textAlignVertical: "center"
+            }}
+            onSelect={(index, value) =>
+              this.setState(
+                {
+                  selectedRule: this.state.gameRule[index],
+                  totalOvers: this.state.gameRule[index].Overs,
+                  startingOvers: this.state.gameRule[index].Overs
+                },
+                () => {
+                  console.log("SELECTED ", this.state.selectedRule);
+                }
+              )
+            }
+          />
+        </View>
+        {/* <Dropdown
           baseColor="rgba(0, 0, 0, 1)"
           value={
             "Overs: " +
@@ -325,8 +415,7 @@ export default class HomeScreen extends React.Component {
               }
             )
           }
-        />
-        <Text>{"\n"}</Text>
+        /> */}
         <View
           style={{
             flex: 1,
@@ -454,8 +543,11 @@ export default class HomeScreen extends React.Component {
           <Dialog.Title>Load or Delete</Dialog.Title>
           <Dialog.Description> </Dialog.Description>
 
-          <ScrollView>{this.state.dataString}</ScrollView>
-          <Dialog.Button label="Cancel" onPress={this.handleCancel} />
+          <ScrollView>
+            {this.state.dataString}
+            <Dialog.Button label="Cancel" onPress={this.handleCancel} />
+            <View style={{ paddingBottom: 100 }} />
+          </ScrollView>
         </Dialog.Container>
       </ScrollView>
     );

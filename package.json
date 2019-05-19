@@ -21,6 +21,7 @@
     "react-is": "^16.8.6",
     "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
     "react-native-dialog": "^5.5.0",
+    "react-native-dropdown": "0.0.6",
     "react-native-elements": "^1.0.0-beta7",
     "react-native-floating-action": "^1.14.1",
     "react-native-keyboard-aware-scroll-view": "^0.8.0",
@@ -28,6 +29,7 @@
     "react-native-material-dropdown": "^0.11.1",
     "react-native-material-ripple": "^0.8.0",
     "react-native-material-textfield": "^0.12.0",
+    "react-native-modal-dropdown": "^0.6.2",
     "react-native-table-component": "^1.2.0",
     "react-native-vector-icons": "^6.4.2",
     "react-navigation": "^3.0.9"
