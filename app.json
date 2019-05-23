@@ -5,30 +5,27 @@
     "privacy": "public",
     "sdkVersion": "32.0.0",
     "android": {
-      "package": "com.HalfnStuff.DuckWorthLewisCalculator"
+      "package": "com.HalfnStuff.DuckWorthLewisCalculator",
+      "versionCode": 2,
+      "permissions": []
     },
     "primaryColor": "#FF8800",
-    "platforms": [
-      "ios",
-      "android"
-    ],
-    "version": "1.0.0",
+    "platforms": ["ios", "android"],
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "bundleIdentifier": "com.HalfnStuff.DuckWorthLewisCalculator",
-      "supportsTablet": true
+      "supportsTablet": false
     },
     "description": "Standard DuckWorth-Lewis Calculator made by S. Kamat",
     "githubUrl": "https://github.com/2ManyProjects/DWL"

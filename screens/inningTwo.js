@@ -68,6 +68,7 @@ export default class InningTwo extends React.Component {
       calculationData: {},
       interupts: [],
       dialog: false,
+      showTutorial: false,
       globalValue: [0, 0, 0],
       disabled: { disable: false, time: null, score: 0, oversBowled: 0 },
       endGame: { disable: false, time: null, score: 0, oversBowled: 0 },
@@ -101,7 +102,8 @@ export default class InningTwo extends React.Component {
               totalOvers: data.totalOvers,
               startingOvers: start,
               calculationData: data.calculationData,
-              gameRule: data.gameRule
+              gameRule: data.gameRule,
+              showTutorial: data.showTutorial
             },
             () => {
               this.initglobalValue(start);
@@ -156,7 +158,8 @@ export default class InningTwo extends React.Component {
         globalValue: val.globalValue,
         endGame: val.endGame,
         gameRule: val.gameRule,
-        disabled: val.disabled
+        disabled: val.disabled,
+        showTutorial: val.showTutorial
       },
       () => {
         this.recalculate();
@@ -188,6 +191,7 @@ export default class InningTwo extends React.Component {
         interupts: [],
         dialog: false,
         targetArray: [],
+        showTutorial: false,
         endGame: { disable: false, time: null, score: 0, oversBowled: 0 },
         disabled: { disable: false, time: null, score: 0, oversBowled: 0 }
       });
@@ -550,7 +554,8 @@ export default class InningTwo extends React.Component {
       globalValue: this.state.globalValue,
       disabled: this.state.disabled,
       endGame: this.state.endGame,
-      gameRule: this.state.gameRule
+      gameRule: this.state.gameRule,
+      showTutorial: this.state.showTutorial
     };
 
     // console.log("Backingup Inning 2");
@@ -717,6 +722,7 @@ export default class InningTwo extends React.Component {
           globals={this.state.globalValue}
           gameRule={this.state.gameRule}
           disable={this.disable}
+          showTutorial={this.state.showTutorial}
         />
 
         <View style={[{ paddingTop: 15 }]}>

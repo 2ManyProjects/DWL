@@ -19,7 +19,8 @@ class Interrupt extends Component {
       oversBowled: 0,
       oversLost: 0,
       oversLeft: 0,
-      endInning: false
+      endInning: false,
+      showTutorial: false
     };
   }
 
@@ -104,7 +105,10 @@ class Interrupt extends Component {
         editInterupt: this.props.interupt
       });
     }
-    this.setState({ totalOvers: this.props.globals[2] - this.props.missing });
+    this.setState({
+      totalOvers: this.props.globals[2] - this.props.missing,
+      showTutorial: this.props.showTutorial
+    });
   }
 
   componentWillUpdate() {}

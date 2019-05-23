@@ -52,6 +52,7 @@ export default class InningOne extends React.Component {
       cardString: null,
       globalValue: [0, 0, 0],
       gameRule: {},
+      showTutorial: false,
       disabled: { disable: false, time: null, score: 0, oversBowled: 0 }
     };
     // console.log("Inning 1 contructed");
@@ -80,7 +81,8 @@ export default class InningOne extends React.Component {
               totalOvers: data.totalOvers,
               startingOvers: start,
               calculationData: data.calculationData,
-              gameRule: data.gameRule
+              gameRule: data.gameRule,
+              showTutorial: data.showTutorial
             },
             () => {
               this.initglobalValue(start);
@@ -126,7 +128,8 @@ export default class InningOne extends React.Component {
         dialog: val.dialog,
         globalValue: val.globalValue,
         gameRule: val.gameRule,
-        disabled: val.disabled
+        disabled: val.disabled,
+        showTutorial: val.showTutorial
       },
       () => {
         this.recalculate();
@@ -351,7 +354,8 @@ export default class InningOne extends React.Component {
       dialog: this.state.dialog,
       globalValue: this.state.globalValue,
       gameRule: this.state.gameRule,
-      disabled: this.state.disabled
+      disabled: this.state.disabled,
+      showTutorial: this.state.showTutorial
     };
 
     console.log("Backingup Inning 1");
@@ -503,6 +507,7 @@ export default class InningOne extends React.Component {
           globals={this.state.globalValue}
           gameRule={this.state.gameRule}
           disable={this.disable}
+          showTutorial={this.state.showTutorial}
         />
         <View
           style={[{ width: "30%", alignSelf: "center", paddingBottom: 15 }]}

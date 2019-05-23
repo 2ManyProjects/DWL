@@ -9,6 +9,8 @@ import {
   Text,
   Button,
   TextInput,
+  Switch,
+  TouchableOpacity,
   View,
   Alert
 } from "react-native";
@@ -38,6 +40,7 @@ export default class HomeScreen extends React.Component {
       games: [],
       calculationData: data,
       submit: true,
+      showTutorial: false,
       gameRule: [
         { Overs: 15, G: 90, minOvers: 3, id: 0 },
         { Overs: 20, G: 120, minOvers: 5, id: 1 },
@@ -185,7 +188,8 @@ export default class HomeScreen extends React.Component {
                 totalOvers: this.state.selectedRule.Overs,
                 startingOvers: this.state.startingOvers,
                 calculationData: this.state.calculationData,
-                gameRule: this.state.selectedRule
+                gameRule: this.state.selectedRule,
+                showTutorial: this.state.showTutorial
               };
               this._storeData(data);
             }
@@ -301,9 +305,13 @@ export default class HomeScreen extends React.Component {
     return temp;
   };
 
+  showTutorial = value => {
+    this.setState({ showTutorial: value });
+  };
+
   render() {
     return (
-      <ScrollView
+      <ScrollView //change to view and re-allign
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
       >
@@ -360,62 +368,6 @@ export default class HomeScreen extends React.Component {
             }
           />
         </View>
-        {/* <Dropdown
-          baseColor="rgba(0, 0, 0, 1)"
-          value={
-            "Overs: " +
-            this.state.selectedRule.Overs +
-            ", Min: " +
-            this.state.selectedRule.minOvers +
-            ", G: " +
-            this.state.selectedRule.G
-          }
-          data={this.state.gameRule.map(game => ({
-            value:
-              "Overs: " +
-              game.Overs +
-              ", Min: " +
-              game.minOvers +
-              ", G: " +
-              game.G
-          }))}
-          containerStyle={{
-            width: 200,
-            height: 40,
-            alignSelf: "center"
-          }}
-          pickerStyle={{
-            backgroundColor: "rgba(255, 255, 255, 1.0)",
-            borderRadius: 2,
-
-            position: "absolute",
-
-            ...Platform.select({
-              ios: {
-                shadowRadius: 2,
-                shadowColor: "rgba(0, 0, 0, 1.0)",
-                shadowOpacity: 0.54,
-                shadowOffset: { width: 0, height: 2 }
-              },
-
-              android: {
-                elevation: 2
-              }
-            })
-          }}
-          onChangeText={(value, index, data) =>
-            this.setState(
-              {
-                selectedRule: this.state.gameRule[index],
-                totalOvers: this.state.gameRule[index].Overs,
-                startingOvers: this.state.gameRule[index].Overs
-              },
-              () => {
-                console.log("SELECTED ", this.state.selectedRule);
-              }
-            )
-          }
-        /> */}
         <View
           style={{
             flex: 1,
@@ -506,39 +458,27 @@ export default class HomeScreen extends React.Component {
           />
         </View>
         <Text>{"\n"}</Text>
-        {/* <Picker
-          style={{ height: 50, width: 200 }}
-          selectedValue={this.state.selectedRule}
-          onValueChange={(itemValue, itemIndex) =>
-            this.setState(
-              {
-                selectedRule: itemValue,
-                totalOvers: itemValue.Overs,
-                startingOvers: itemValue.Overs
-              },
-              () => {
-                console.log("SELECTED ", this.state.selectedRule);
-              }
-            )
-          }
-          mode="dropdown"
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center"
+          }}
         >
-          {this.state.gameRule.map(game => (
-            <Picker.Item
-              key={game.id}
-              label={
-                "Overs: " +
-                game.Overs +
-                ", Min: " +
-                game.minOvers +
-                ", G: " +
-                game.G
-              }
-              value={game}
-            />
-          ))}
-        </Picker> */}
-
+          <Text
+            style={{
+              fontSize: 18,
+              color: "black",
+              textAlign: "center",
+              textAlignVertical: "center"
+            }}
+          >
+            Show Tutorial
+          </Text>
+          <Switch
+            onValueChange={this.showTutorial}
+            value={this.state.showTutorial}
+          />
+        </View>
         <Dialog.Container visible={this.state.open}>
           <Dialog.Title>Load or Delete</Dialog.Title>
           <Dialog.Description> </Dialog.Description>
@@ -549,6 +489,35 @@ export default class HomeScreen extends React.Component {
             <View style={{ paddingBottom: 100 }} />
           </ScrollView>
         </Dialog.Container>
+
+        {this.state.showTutorial && (
+          // <View
+          // style={{
+          //   width: 32,
+          //   hieght: 32
+          // }}>
+          <TouchableOpacity>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "flex-end",
+                marginBottom: 36
+              }}
+            >
+              <Icon
+                onPress={() => {
+                  alert("TUTORIAL POPUP");
+                }}
+                style={{ backgroundColor: this._color, paddingLeft: 0 }}
+                size={30}
+                color="#FF8800"
+                name="questioncircle"
+                type="antdesign"
+              />
+            </View>
+          </TouchableOpacity>
+          /* </View> */
+        )}
       </ScrollView>
     );
   }
