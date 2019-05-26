@@ -51,6 +51,10 @@ class Init extends Component {
     }
   };
 
+  Cancel = () => {
+    this.setState({ score: 0 }, this.props.Cancel());
+  };
+
   getValue = input => {
     if (this.state[input] && this.state[input] != -5)
       return this.state[input].toString();
@@ -77,6 +81,7 @@ class Init extends Component {
             keyboardType="numeric"
           />
           <Dialog.Button label="Submit" onPress={this.Submit} />
+          <Dialog.Button label="Cancel" onPress={this.Cancel} />
         </Dialog.Container>
       </SafeAreaView>
     );

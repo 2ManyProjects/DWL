@@ -29,6 +29,12 @@ export default class HomeScreen extends React.Component {
     // var filtered = data.filter(function(el) {
     //   return el[0] != null;
     // });
+    const def = [
+      { Overs: 15, G: 90, minOvers: 3, id: 0 },
+      { Overs: 20, G: 120, minOvers: 5, id: 1 },
+      { Overs: 25, G: 150, minOvers: 7, id: 2 },
+      { Overs: 50, G: 200, minOvers: 20, id: 3 }
+    ];
 
     this.state = {
       gameID: "",
@@ -41,13 +47,8 @@ export default class HomeScreen extends React.Component {
       calculationData: data,
       submit: true,
       showTutorial: false,
-      gameRule: [
-        { Overs: 15, G: 90, minOvers: 3, id: 0 },
-        { Overs: 20, G: 120, minOvers: 5, id: 1 },
-        { Overs: 25, G: 150, minOvers: 7, id: 2 },
-        { Overs: 50, G: 200, minOvers: 20, id: 3 }
-      ],
-      selectedRule: { Overs: 15, G: 90, minOvers: 3, id: 0 },
+      gameRule: [def],
+      selectedRule: def[def.length - 1],
       gameRuleStr: ""
     };
     this.init();
@@ -68,12 +69,13 @@ export default class HomeScreen extends React.Component {
       ];
 
       if (settings !== null) {
+        let setting = JSON.parse(settings);
         this.setState(
           {
-            gameRule: JSON.parse(settings),
-            selectedRule: JSON.parse(settings)[0],
-            totalOvers: JSON.parse(settings)[0].Overs,
-            startingOvers: JSON.parse(settings)[0].Overs
+            gameRule: setting,
+            selectedRule: setting[setting.length - 1],
+            totalOvers: setting[setting.length - 1].Overs,
+            startingOvers: setting[setting.length - 1].Overs
           },
           () => {}
         );
@@ -81,9 +83,9 @@ export default class HomeScreen extends React.Component {
         this.setState(
           {
             gameRule: def,
-            selectedRule: { Overs: 15, G: 90, minOvers: 3, id: 0 },
-            totalOvers: 15,
-            startingOvers: 15
+            selectedRule: def[def.length - 1],
+            totalOvers: def[def.length - 1].Overs,
+            startingOvers: def[def.length - 1].Overs
           },
           () => {}
         );

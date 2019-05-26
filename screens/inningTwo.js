@@ -18,6 +18,8 @@ import Interrupt from "../components/addInterrupt";
 import { subtractOvers, generateGuid } from "../components/helpers";
 import Init from "./Init";
 import Icon from "react-native-vector-icons/AntDesign";
+import { StackActions, NavigationActions } from "react-navigation";
+
 import {
   Table,
   TableWrapper,
@@ -77,6 +79,12 @@ export default class InningTwo extends React.Component {
     this.setup = this.setup.bind(this);
     // console.log("Inning 2 contructed");
   }
+
+  Cancel = () => {
+    this.setState({ open: false }, () => {
+      this.reset();
+    });
+  };
 
   initglobalValue = val => {
     let start = val;
@@ -570,6 +578,45 @@ export default class InningTwo extends React.Component {
     }
   };
 
+  reset = () => {
+    this.setState(
+      {
+        score: -5,
+        targetScore: 0,
+        initialMissing: 0,
+        reset: true,
+        init: true,
+        interupts: [],
+        acc: 100.0,
+        ac: [],
+        missing: 0
+      },
+      async () => {
+        try {
+          await AsyncStorage.mergeItem("Inning2", JSON.stringify({ size: 0 }));
+          const resetAction = StackActions.reset({
+            index: 1,
+            actions: [NavigationActions.navigate({ routeName: "InningOne" })]
+          });
+          this.props.navigation.dispatch(resetAction);
+          const navigateAction = NavigationActions.navigate({
+            routeName: "InningOne",
+
+            params: {},
+
+            action: NavigationActions.navigate({ routeName: "InningOne" })
+          });
+
+          this.props.navigation.dispatch(navigateAction);
+          // console.log("Inning 2 Saved", 0);
+        } catch (error) {
+          console.log(error);
+          // Error saving data
+        }
+      }
+    );
+  };
+
   generateTable = () => {
     const info = index => (
       <TouchableOpacity>
@@ -730,7 +777,7 @@ export default class InningTwo extends React.Component {
             style={[{ width: "30%", alignSelf: "center", paddingBottom: 15 }]}
           >
             <Button
-              title="Add Interruptions"
+              title="Add Interruption"
               color="#FF8800"
               disabled={this.state.endGame.disable}
               onPress={() => {
@@ -773,37 +820,7 @@ export default class InningTwo extends React.Component {
                 this.setState({ calculations: true });
               }}
             />
-            <Button
-              title="Reset"
-              color="#FF8800"
-              onPress={() => {
-                this.setState(
-                  {
-                    score: -5,
-                    targetScore: 0,
-                    initialMissing: 0,
-                    reset: true,
-                    init: true,
-                    interupts: [],
-                    acc: 100.0,
-                    ac: [],
-                    missing: 0
-                  },
-                  async () => {
-                    try {
-                      await AsyncStorage.mergeItem(
-                        "Inning2",
-                        JSON.stringify({ size: 0 })
-                      );
-                      // console.log("Inning 2 Saved", 0);
-                    } catch (error) {
-                      console.log(error);
-                      // Error saving data
-                    }
-                  }
-                );
-              }}
-            />
+            <Button title="Reset" color="#FF8800" onPress={this.reset} />
           </View>
           {this.setup() && (
             <Init
@@ -811,6 +828,7 @@ export default class InningTwo extends React.Component {
               closeInit={this.Submit}
               disabled={this.state.disabled}
               gameRule={this.state.gameRule}
+              Cancel={this.Cancel}
             />
           )}
         </View>
@@ -818,8 +836,6 @@ export default class InningTwo extends React.Component {
     );
   }
 }
-
-//Seperate the summary and reset buttons, send DenNY Uncle Connection Details, Change Summaries
 
 const tableStyle = StyleSheet.create({
   container: { flex: 1, padding: 16, paddingTop: 30, backgroundColor: "#fff" },

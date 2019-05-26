@@ -51,7 +51,7 @@ class Interrupt extends Component {
           if (value <= 6) {
             if (value != "0") this.setState({ [id]: parseInt(value) });
             else this.setState({ [id]: 0 });
-          } else alert("No more thank 6 balls in an over");
+          } else alert("No more than 6 balls in an over");
           break;
         case "oversLost":
           if (value != "0") {

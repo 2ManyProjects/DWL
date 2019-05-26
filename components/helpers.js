@@ -3,18 +3,32 @@ export function subtractOvers(x, y) {
   let ty = Math.floor(y);
   let temp = tx - ty;
   let result;
-  let decx = x - tx;
-  let decy = y - ty;
-  decx = Math.floor((Math.floor(decx * 100) + 1) / 10) / 10; //Formatting
-  decy = Math.floor((Math.floor(decy * 100) + 1) / 10) / 10;
-  if (decx >= decy) {
-    result = decx - decy;
+  let decx = x * 10 - tx * 10;
+  let decy = y * 10 - ty * 10;
+  if (decx == decy) {
+    result = 0;
+  } else if (decx > decy) {
+    result = (decx - decy) / 10;
   } else {
     temp -= 1;
-    result = Math.floor((0.7 - (decy - decx)) * 10) / 10;
+    result = (6 - (decy - decx)) / 10;
   }
   result += temp;
-  // console.log("X", x, " Y", y, result);
+  // console.log(
+  //   "X",
+  //   x,
+  //   " Y",
+  //   y,
+  //   "tx",
+  //   tx,
+  //   "ty",
+  //   ty,
+  //   "DeltaX",
+  //   decx,
+  //   "DeltaY",
+  //   decy,
+  //   result
+  // );
   return result;
 }
 
