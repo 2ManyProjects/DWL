@@ -13,10 +13,7 @@ const AppNavigator = createAppContainer(
       navigationOptions: {
         tabBarLabel: "Inning 1",
         tabBarIcon: ({ focused }) => (
-          <TabBarIcon
-            focused={focused}
-            name={Platform.OS === "ios" ? "ios-close-circle" : "md-baseball"}
-          />
+          <TabBarIcon focused={focused} name={"crystal-ball"} />
         )
       }
     },
@@ -37,10 +34,7 @@ const AppNavigator = createAppContainer(
       navigationOptions: {
         tabBarLabel: "Inning 2",
         tabBarIcon: ({ focused }) => (
-          <TabBarIcon
-            focused={focused}
-            name={Platform.OS === "ios" ? "ios-close-circle" : "md-baseball"}
-          />
+          <TabBarIcon focused={focused} name={"crystal-ball"} />
         )
       }
     }
